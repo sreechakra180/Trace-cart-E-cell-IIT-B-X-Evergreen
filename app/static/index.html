@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TraceCart — Evidence-First Vision AI for Mobile Scan & Go</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#0B0F12',
+            graphite: '#151B1F',
+            'graphite-elevated': '#1B2329',
+            'warm-white': '#F4F3EE',
+            'muted-steel': '#859197',
+            'steel-dim': '#4A555B',
+            'signal-teal': '#54D8C4',
+            'signal-teal-dim': 'rgba(84, 216, 196, 0.12)',
+            'muted-lime': '#C7E66B',
+            'verification-amber': '#D9A441',
+            'verification-amber-dim': 'rgba(217, 164, 65, 0.12)',
+            'border-subtle': '#293237',
+            'border-light': '#36434A'
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['Geist Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0B0F12;
+      color: #F4F3EE;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      letter-spacing: -0.011em;
+    }
+    .grid-matrix {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(41, 50, 55, 0.35) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(41, 50, 55, 0.35) 1px, transparent 1px);
+    }
+    .reticle-corner {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-color: #54D8C4;
+    }
+  </style>
+</head>
+<body class="selection:bg-signal-teal selection:text-obsidian antialiased">
+
+  <!-- Top Minimal Nav Bar -->
+  <header class="fixed top-0 left-0 right-0 z-50 h-16 border-b border-border-subtle bg-obsidian/90 backdrop-blur-md px-6 lg:px-12 flex items-center justify-between">
+    <div class="flex items-center space-x-6">
+      <a href="#hero" class="flex items-center space-x-3 group">
+        <div class="w-6 h-6 border border-signal-teal flex items-center justify-center p-1 bg-signal-teal-dim">
+          <div class="w-1.5 h-1.5 bg-signal-teal"></div>
+        </div>
+        <span class="font-mono text-sm tracking-widest font-semibold uppercase text-warm-white group-hover:text-signal-teal transition-colors">
+          TRACE<span class="text-muted-steel font-normal">CART</span>
+        </span>
+      </a>
+      <div class="h-4 w-[1px] bg-border-subtle hidden sm:block"></div>
+      <span class="font-mono text-[11px] text-muted-steel tracking-wide hidden md:inline-block">
+        E-CELL IIT BOMBAY × EVERSEEN // RECONCILIATION PROTOTYPE
+      </span>
+    </div>
+
+    <nav class="hidden lg:flex items-center space-x-8 text-xs font-medium tracking-wide uppercase font-mono text-muted-steel">
+      <a href="#hero" class="hover:text-warm-white transition-colors">Doctrine</a>
+      <a href="#route-command-center" onclick="switchTab('overview')" class="hover:text-warm-white transition-colors">Console</a>
+      <a href="#route-command-center" onclick="switchTab('workbench')" class="hover:text-warm-white transition-colors">Workbench</a>
+      <a href="#route-command-center" onclick="switchTab('evaluation')" class="hover:text-warm-white transition-colors">Evaluation Lab</a>
+      <a href="#route-command-center" onclick="switchTab('settings')" class="hover:text-warm-white transition-colors">Settings</a>
+    </nav>
+
+    <div class="flex items-center space-x-4">
+      <span id="badge-system-status" class="px-2.5 py-1 text-[11px] font-mono border border-signal-teal/40 bg-signal-teal-dim text-signal-teal">
+        ONLINE: PROTOTYPE
+      </span>
+      <a href="#route-command-center" class="inline-flex items-center space-x-2 px-4 py-2 border border-signal-teal text-signal-teal bg-signal-teal-dim hover:bg-signal-teal hover:text-obsidian font-mono text-xs font-medium uppercase tracking-wider transition-all duration-150">
+        <span class="w-2 h-2 rounded-full bg-signal-teal animate-pulse"></span>
+        <span>Run Engine</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- MAIN VIEW -->
+  <main class="pt-16">
+    <!-- Hero Statement -->
+    <section id="hero" class="relative min-h-[50vh] flex flex-col justify-between border-b border-border-subtle px-6 lg:px-12 pt-12 pb-8 overflow-hidden">
+      <div class="absolute inset-0 grid-matrix opacity-30 pointer-events-none"></div>
+
+      <div class="relative z-10 flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-muted-steel border-b border-border-subtle pb-4">
+        <div class="flex items-center space-x-4">
+          <span class="flex items-center space-x-2">
+            <span class="w-1.5 h-1.5 bg-signal-teal rounded-full"></span>
+            <span class="text-warm-white">EVIDENCE-FIRST LOSS PREVENTION ENGINE</span>
+          </span>
+          <span class="text-steel-dim">/</span>
+          <span>BIPARTITE HUNGARIAN MATCHING</span>
+        </div>
+        <div class="flex items-center space-x-6 text-[11px]">
+          <span>TEMPORAL GATE W_gate: 10s</span>
+          <span class="text-steel-dim">|</span>
+          <span class="text-muted-lime">ZERO BIOMETRICS AUDITED</span>
+        </div>
+      </div>
+
+      <div class="relative z-10 py-6 max-w-4xl">
+        <div class="inline-block px-2.5 py-1 mb-4 border border-border-subtle bg-graphite font-mono text-[11px] text-muted-steel uppercase tracking-widest">
+          Team Samanvaya // Final Release Candidate v1.0.0
+        </div>
+        <h1 class="text-3xl sm:text-5xl font-normal tracking-tight text-warm-white leading-tight mb-4">
+          Match what moved with what was scanned.<br>
+          <span class="text-muted-steel font-light">Intervene only when evidence is strong.</span>
+        </h1>
+        <p class="text-sm sm:text-base text-muted-steel max-w-2xl font-normal leading-relaxed mb-6">
+          TraceCart reconciles physical retail product transfers with mobile scan streams. 
+          Unmatched visual events produce courteous verification prompts with complete mathematical provenance ($T, Z, S, F$ cost terms), never false accusations.
+        </p>
+      </div>
+    </section>
+
+    <!-- ROUTE B: OPERATIONS COMMAND CENTER -->
+    <section id="route-command-center" class="min-h-screen bg-obsidian flex flex-col">
+      <div class="flex-1 flex flex-col lg:flex-row border-b border-border-subtle">
+        
+        <!-- Left Navigation Sidebar -->
+        <aside class="w-full lg:w-64 bg-graphite border-r border-border-subtle p-4 flex flex-col justify-between shrink-0">
+          <div class="space-y-6">
+            <div class="font-mono text-[11px] text-muted-steel uppercase tracking-wider pb-2 border-b border-border-subtle">
+              Operations Console
+            </div>
+
+            <nav class="space-y-1 font-mono text-xs">
+              <button onclick="switchTab('overview')" id="tab-btn-overview" class="w-full flex items-center space-x-2.5 px-3 py-2.5 text-left bg-obsidian border-l-2 border-signal-teal text-warm-white transition-colors">
+                <svg class="w-4 h-4 text-signal-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                <span>Overview</span>
+              </button>
+
+              <button onclick="switchTab('workbench')" id="tab-btn-workbench" class="w-full flex items-center justify-between px-3 py-2.5 text-left text-muted-steel hover:text-warm-white hover:bg-obsidian/50 transition-colors">
+                <span class="flex items-center space-x-2.5">
+                  <svg class="w-4 h-4 text-verification-amber" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                  <span>Workbench</span>
+                </span>
+                <span id="badge-workbench-state" class="px-1.5 py-0.5 bg-signal-teal-dim text-signal-teal text-[10px]">INSPECT</span>
+              </button>
+
+              <button onclick="switchTab('evaluation')" id="tab-btn-evaluation" class="w-full flex items-center justify-between px-3 py-2.5 text-left text-muted-steel hover:text-warm-white hover:bg-obsidian/50 transition-colors">
+                <span class="flex items-center space-x-2.5">
+                  <svg class="w-4 h-4 text-muted-lime" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                  <span>Evaluation Lab</span>
+                </span>
+                <span class="text-[10px] text-muted-lime font-mono">BENCHMARK</span>
+              </button>
+
+              <button onclick="switchTab('settings')" id="tab-btn-settings" class="w-full flex items-center space-x-2.5 px-3 py-2.5 text-left text-muted-steel hover:text-warm-white hover:bg-obsidian/50 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span>System Settings</span>
+              </button>
+            </nav>
+          </div>
+
+          <!-- Bottom Footer Details (Truthful) -->
+          <div class="pt-4 border-t border-border-subtle font-mono text-[11px] text-muted-steel space-y-2">
+            <div class="flex justify-between">
+              <span>ENGINE:</span>
+              <span id="footer-version" class="text-warm-white">v1.0.0-rc1</span>
+            </div>
+            <div class="flex justify-between">
+              <span>ACTIVE NODE:</span>
+              <span class="text-signal-teal">LAB-EDGE-01</span>
+            </div>
+            <div class="flex justify-between">
+              <span>OPTICAL BENCH:</span>
+              <span id="footer-cameras" class="text-warm-white">1 Zone Active</span>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Command Center Workspace -->
+        <div class="flex-1 flex flex-col min-w-0 bg-obsidian">
+          <!-- Control Bar -->
+          <div class="h-14 border-b border-border-subtle px-6 flex flex-wrap items-center justify-between gap-4 bg-graphite">
+            <div class="flex items-center space-x-3">
+              <span class="font-mono text-xs font-semibold text-warm-white uppercase">SCENARIO:</span>
+              <select id="scenario-selector" onchange="runReconciliation()" class="bg-obsidian border border-border-subtle text-warm-white font-mono text-xs px-3 py-1 focus:border-signal-teal focus:outline-none">
+                <option value="S01">S01 — Clean Pick & Scan (MATCHED)</option>
+                <option value="S02">S02 — Unscanned Transfer (REVIEW)</option>
+                <option value="S03" selected>S03 — Multi-Item Clustered Pick (Hungarian Bipartite)</option>
+                <option value="S04">S04 — Delayed Scan Ingestion (MATCHED)</option>
+                <option value="S08">S08 — Adverse Optical Quality (ABSTAIN)</option>
+              </select>
+            </div>
+
+            <div class="flex items-center space-x-4 font-mono text-xs">
+              <div class="text-muted-steel hidden sm:inline">
+                LATENCY: <span id="stat-latency" class="text-signal-teal">1.8 ms</span>
+              </div>
+              <button onclick="runReconciliation()" class="px-4 py-1.5 bg-signal-teal text-obsidian font-semibold hover:bg-warm-white transition-colors uppercase tracking-wider flex items-center space-x-2">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Re-Run Pipeline</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Dynamic Views -->
+          <div class="p-6 overflow-y-auto space-y-6">
+
+            <!-- TAB 1: OPERATIONS OVERVIEW -->
+            <div id="view-overview" class="space-y-6">
+              <!-- KPI Row -->
+              <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 font-mono">
+                <div class="p-4 bg-graphite border border-border-subtle">
+                  <div class="text-[11px] text-muted-steel uppercase tracking-wider">Visual Events</div>
+                  <div id="kpi-visuals" class="text-2xl lg:text-3xl font-medium text-warm-white mt-1">2</div>
+                  <div class="text-[10px] text-signal-teal mt-1">Optical Stream Valid</div>
+                </div>
+
+                <div class="p-4 bg-graphite border border-border-subtle">
+                  <div class="text-[11px] text-muted-steel uppercase tracking-wider">Candidate Assocs</div>
+                  <div id="kpi-candidates" class="text-2xl lg:text-3xl font-medium text-warm-white mt-1">4</div>
+                  <div class="text-[10px] text-muted-steel mt-1">Gated Window W_gate</div>
+                </div>
+
+                <div class="p-4 bg-graphite border border-signal-teal/30">
+                  <div class="text-[11px] text-signal-teal uppercase tracking-wider">MATCHED</div>
+                  <div id="kpi-matched" class="text-2xl lg:text-3xl font-medium text-signal-teal mt-1">2</div>
+                  <div class="text-[10px] text-signal-teal mt-1">Clean Resolution</div>
+                </div>
+
+                <div class="p-4 bg-graphite border border-verification-amber/40">
+                  <div class="text-[11px] text-verification-amber uppercase tracking-wider">REVIEW</div>
+                  <div id="kpi-review" class="text-2xl lg:text-3xl font-medium text-verification-amber mt-1">0</div>
+                  <div class="text-[10px] text-verification-amber mt-1">Proportionate Attention</div>
+                </div>
+
+                <div class="p-4 bg-graphite border border-border-subtle">
+                  <div class="text-[11px] text-muted-steel uppercase tracking-wider">ABSTAIN</div>
+                  <div id="kpi-abstain" class="text-2xl lg:text-3xl font-medium text-muted-steel mt-1">0</div>
+                  <div class="text-[10px] text-steel-dim mt-1">Safe Zero-Guess State</div>
+                </div>
+              </div>
+
+              <!-- Activity Ledger & Diagnostics -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div class="lg:col-span-8 bg-graphite border border-border-subtle">
+                  <div class="px-5 py-3.5 border-b border-border-subtle flex items-center justify-between font-mono text-xs">
+                    <span class="text-warm-white font-medium">RECONCILIATION ACTIVITY LEDGER</span>
+                    <span class="text-signal-teal">STATUS: READY</span>
+                  </div>
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-left font-mono text-xs">
+                      <thead class="bg-obsidian/70 text-muted-steel border-b border-border-subtle uppercase text-[10px] tracking-wider">
+                        <tr>
+                          <th class="py-2.5 px-4">Decision ID</th>
+                          <th class="py-2.5 px-4">Rule</th>
+                          <th class="py-2.5 px-4">Zone</th>
+                          <th class="py-2.5 px-4">Item</th>
+                          <th class="py-2.5 px-4 text-right">State</th>
+                        </tr>
+                      </thead>
+                      <tbody id="ledger-body" class="divide-y divide-border-subtle">
+                        <!-- Populated by JS -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- Processing Diagnostics -->
+                <div class="lg:col-span-4 bg-graphite border border-border-subtle p-5 space-y-4 font-mono text-xs">
+                  <div class="text-warm-white font-medium border-b border-border-subtle pb-2">
+                    PROVENANCE & HARDWARE TELEMETRY
+                  </div>
+                  <div class="space-y-3">
+                    <div class="flex justify-between">
+                      <span class="text-muted-steel">Optical Ingest Mode:</span>
+                      <span class="text-signal-teal">OpenCV + Centroid Tracker</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-muted-steel">Matching Engine:</span>
+                      <span class="text-warm-white">Hungarian Bipartite Bijection</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-muted-steel">Decision Cost Terms:</span>
+                      <span class="text-warm-white">T (Time), Z (Zone), S (SKU), F (Flow)</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-muted-steel">Biometrics Stored:</span>
+                      <span class="text-muted-lime">NONE (100% Geometry)</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-muted-steel">Config Hash:</span>
+                      <span id="diag-config-hash" class="text-warm-white">b7a8c91d</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 2: WORKBENCH -->
+            <div id="view-workbench" class="space-y-6 hidden">
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Optical Viewport Mockup -->
+                <div class="lg:col-span-7 bg-graphite border border-border-subtle p-4 space-y-4">
+                  <div class="flex justify-between items-center font-mono text-xs border-b border-border-subtle pb-2">
+                    <span class="text-warm-white font-medium">OPTICAL VIEWPORT // BAY A2 CAM0</span>
+                    <span id="workbench-zone-tag" class="text-signal-teal font-mono">BAY_A2_COLD_CASE</span>
+                  </div>
+
+                  <div class="relative bg-obsidian aspect-video border border-border-subtle flex items-center justify-center overflow-hidden">
+                    <div class="absolute inset-0 grid-matrix opacity-20"></div>
+                    <div class="absolute top-4 left-4 font-mono text-[10px] text-muted-steel space-y-1">
+                      <div>ZONE: Z_PICK [100,100,450,380]</div>
+                      <div>ZONE: Z_BAG [500,260,880,500]</div>
+                    </div>
+                    <!-- Detected Reticle -->
+                    <div id="reticle-box" class="relative border-2 border-signal-teal p-3 bg-signal-teal-dim/10 text-center font-mono text-xs">
+                      <div class="text-signal-teal font-semibold" id="reticle-label">TRACK_88910: BOTTLE</div>
+                      <div class="text-[10px] text-muted-steel" id="reticle-conf">CONF: 0.92 // CONTINUITY: 0.98</div>
+                    </div>
+                  </div>
+
+                  <!-- Timeline markers -->
+                  <div class="bg-obsidian border border-border-subtle p-3 font-mono text-xs space-y-2">
+                    <div class="text-muted-steel text-[10px] uppercase">Event Handling Window</div>
+                    <div class="flex justify-between text-[11px]" id="workbench-timing">
+                      <span>T_pick: -8.0s</span>
+                      <span class="text-signal-teal font-semibold">T_bag (T_ref): -5.0s</span>
+                      <span class="text-warm-white">T_scan: -4.5s (Delta: +0.5s)</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Association Dossier -->
+                <div class="lg:col-span-5 bg-graphite border border-border-subtle p-5 space-y-4 font-mono text-xs">
+                  <div class="text-warm-white font-medium border-b border-border-subtle pb-2 flex justify-between">
+                    <span>ASSOCIATION DOSSIER</span>
+                    <span id="dossier-state-badge" class="px-2 py-0.5 bg-signal-teal-dim text-signal-teal font-bold border border-signal-teal">MATCHED</span>
+                  </div>
+
+                  <div class="space-y-3">
+                    <div class="flex justify-between">
+                      <span class="text-muted-steel">Decision ID:</span>
+                      <span id="dossier-id" class="text-warm-white">D-V-1-v1</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-muted-steel">Enforcing Rule:</span>
+                      <span id="dossier-rule" class="text-signal-teal">R10 (Clean Match)</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-muted-steel">Selected Scan:</span>
+                      <span id="dossier-scan" class="text-warm-white">SCAN-001</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-muted-steel">Best Cost C(i,j):</span>
+                      <span id="dossier-cost" class="text-warm-white">0.024</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-muted-steel">Ambiguity Margin:</span>
+                      <span id="dossier-margin" class="text-signal-teal">> 0.10 (Clear)</span>
+                    </div>
+                  </div>
+
+                  <!-- Multi-Term Cost Breakdown -->
+                  <div class="pt-4 border-t border-border-subtle space-y-2">
+                    <div class="text-muted-steel text-[10px] uppercase">Normalized Cost Terms ($C = \sum \lambda_k \cdot k$)</div>
+                    <div class="grid grid-cols-4 gap-2 text-center text-[11px]">
+                      <div class="p-2 bg-obsidian border border-border-subtle">
+                        <div class="text-muted-steel text-[9px]">T (Time)</div>
+                        <div id="cost-term-t" class="text-warm-white font-semibold mt-1">0.05</div>
+                      </div>
+                      <div class="p-2 bg-obsidian border border-border-subtle">
+                        <div class="text-muted-steel text-[9px]">Z (Zone)</div>
+                        <div id="cost-term-z" class="text-warm-white font-semibold mt-1">0.00</div>
+                      </div>
+                      <div class="p-2 bg-obsidian border border-border-subtle">
+                        <div class="text-muted-steel text-[9px]">S (SKU)</div>
+                        <div id="cost-term-s" class="text-warm-white font-semibold mt-1">0.04</div>
+                      </div>
+                      <div class="p-2 bg-obsidian border border-border-subtle">
+                        <div class="text-muted-steel text-[9px]">F (Flow)</div>
+                        <div id="cost-term-f" class="text-warm-white font-semibold mt-1">0.00</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Recommended Action -->
+                  <div class="pt-3 border-t border-border-subtle space-y-1.5">
+                    <div class="text-muted-steel text-[10px] uppercase">Action Template (Non-Accusatory)</div>
+                    <p id="dossier-action" class="text-[11px] text-muted-steel leading-relaxed bg-obsidian p-3 border border-border-subtle">
+                      No action.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 3: EVALUATION LAB -->
+            <div id="view-evaluation" class="space-y-6 hidden font-mono">
+              <div class="bg-graphite border border-border-subtle p-5 space-y-4">
+                <div class="flex justify-between items-center border-b border-border-subtle pb-3">
+                  <div>
+                    <h3 class="text-sm font-semibold text-warm-white">DETERMINISTIC EVALUATION BENCHMARK</h3>
+                    <p class="text-xs text-muted-steel">Evaluated across standard scenario suite (S01, S02, S03, S04, S08)</p>
+                  </div>
+                  <span class="px-2 py-1 bg-signal-teal-dim text-signal-teal text-xs border border-signal-teal">STRICT METHODOLOGY</span>
+                </div>
+
+                <!-- SLA Matrix Table -->
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs">
+                    <thead class="bg-obsidian text-muted-steel border-b border-border-subtle uppercase text-[10px]">
+                      <tr>
+                        <th class="py-2.5 px-4">Parameter</th>
+                        <th class="py-2.5 px-4">Target Specification</th>
+                        <th class="py-2.5 px-4">Measured Result</th>
+                        <th class="py-2.5 px-4 text-right">Audit Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="eval-sla-body" class="divide-y divide-border-subtle">
+                      <!-- Populated dynamically from /api/evaluation -->
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="p-3 bg-obsidian border border-border-subtle text-[11px] text-muted-steel space-y-1">
+                  <div class="text-warm-white font-medium">Statistical Integrity Note:</div>
+                  <p>
+                    With $N=4$ clean units tested, 0 false interventions are observed. Under Wilson score / zero-failure statistics, $N=4$ yields a 95% upper bound of 52.7%. 
+                    Claims of false intervention rates below 0.15% (&lt; 1 in 1000) are marked <span class="text-verification-amber font-semibold">UNSUPPORTED</span> until $\ge 3,000$ labelled transactions are evaluated.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 4: SETTINGS -->
+            <div id="view-settings" class="space-y-6 hidden font-mono">
+              <div class="bg-graphite border border-border-subtle p-5 max-w-2xl space-y-4">
+                <div class="border-b border-border-subtle pb-3">
+                  <h3 class="text-sm font-semibold text-warm-white">RUNTIME CONFIGURATION TUNER</h3>
+                  <p class="text-xs text-muted-steel">Adjust matching weights and gating thresholds (Pre-registration baseline)</p>
+                </div>
+
+                <div class="space-y-4 text-xs">
+                  <div>
+                    <div class="flex justify-between mb-1">
+                      <span class="text-muted-steel">λ_T (Temporal Weight):</span>
+                      <span id="val-lambda-t" class="text-signal-teal font-semibold">0.50</span>
+                    </div>
+                    <input id="slider-lambda-t" type="range" min="0" max="1" step="0.05" value="0.50" oninput="document.getElementById('val-lambda-t').innerText=this.value" class="w-full accent-signal-teal bg-obsidian">
+                  </div>
+
+                  <div>
+                    <div class="flex justify-between mb-1">
+                      <span class="text-muted-steel">λ_Z (Zone Weight):</span>
+                      <span id="val-lambda-z" class="text-signal-teal font-semibold">0.15</span>
+                    </div>
+                    <input id="slider-lambda-z" type="range" min="0" max="1" step="0.05" value="0.15" oninput="document.getElementById('val-lambda-z').innerText=this.value" class="w-full accent-signal-teal bg-obsidian">
+                  </div>
+
+                  <div>
+                    <div class="flex justify-between mb-1">
+                      <span class="text-muted-steel">λ_S (SKU Agreement Weight):</span>
+                      <span id="val-lambda-s" class="text-signal-teal font-semibold">0.25</span>
+                    </div>
+                    <input id="slider-lambda-s" type="range" min="0" max="1" step="0.05" value="0.25" oninput="document.getElementById('val-lambda-s').innerText=this.value" class="w-full accent-signal-teal bg-obsidian">
+                  </div>
+
+                  <div>
+                    <div class="flex justify-between mb-1">
+                      <span class="text-muted-steel">λ_F (Flow / Quantity Weight):</span>
+                      <span id="val-lambda-f" class="text-signal-teal font-semibold">0.10</span>
+                    </div>
+                    <input id="slider-lambda-f" type="range" min="0" max="1" step="0.05" value="0.10" oninput="document.getElementById('val-lambda-f').innerText=this.value" class="w-full accent-signal-teal bg-obsidian">
+                  </div>
+
+                  <div>
+                    <div class="flex justify-between mb-1">
+                      <span class="text-muted-steel">τ_match (Acceptance Threshold):</span>
+                      <span id="val-tau-match" class="text-signal-teal font-semibold">0.50</span>
+                    </div>
+                    <input id="slider-tau-match" type="range" min="0.1" max="0.9" step="0.05" value="0.50" oninput="document.getElementById('val-tau-match').innerText=this.value" class="w-full accent-signal-teal bg-obsidian">
+                  </div>
+
+                  <div class="pt-4 border-t border-border-subtle flex justify-end">
+                    <button onclick="applyConfig()" class="px-5 py-2 bg-signal-teal text-obsidian font-semibold hover:bg-warm-white transition-colors uppercase tracking-wider">
+                      Apply & Re-evaluate
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let currentDecisions = [];
+
+    function switchTab(tabName) {
+      ['overview', 'workbench', 'evaluation', 'settings'].forEach(t => {
+        const v = document.getElementById('view-' + t);
+        const b = document.getElementById('tab-btn-' + t);
+        if (v) v.classList.add('hidden');
+        if (b) {
+          b.classList.remove('bg-obsidian', 'border-l-2', 'border-signal-teal', 'text-warm-white');
+          b.classList.add('text-muted-steel');
+        }
+      });
+
+      const activeView = document.getElementById('view-' + tabName);
+      const activeBtn = document.getElementById('tab-btn-' + tabName);
+      if (activeView) activeView.classList.remove('hidden');
+      if (activeBtn) {
+        activeBtn.classList.add('bg-obsidian', 'border-l-2', 'border-signal-teal', 'text-warm-white');
+        activeBtn.classList.remove('text-muted-steel');
+      }
+
+      if (tabName === 'evaluation') {
+        loadEvaluation();
+      }
+    }
+
+    async function loadStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        document.getElementById('badge-system-status').innerText = data.system_status;
+        document.getElementById('footer-version').innerText = data.engine_version;
+        document.getElementById('diag-config-hash').innerText = data.active_config_hash;
+      } catch (err) {
+        console.error('Failed to load status:', err);
+      }
+    }
+
+    async function runReconciliation() {
+      const scenarioId = document.getElementById('scenario-selector').value;
+      try {
+        const res = await fetch('/api/run', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({scenario: scenarioId})
+        });
+        const data = await res.json();
+        currentDecisions = data.decisions || [];
+
+        document.getElementById('stat-latency').innerText = data.processing_latency_ms + ' ms';
+        document.getElementById('kpi-visuals').innerText = data.visual_count;
+        document.getElementById('kpi-candidates').innerText = data.scan_count * data.visual_count;
+
+        const matched = currentDecisions.filter(d => d.state === 'MATCHED').length;
+        const review = currentDecisions.filter(d => d.state === 'REVIEW').length;
+        const abstain = currentDecisions.filter(d => d.state === 'ABSTAIN').length;
+
+        document.getElementById('kpi-matched').innerText = matched;
+        document.getElementById('kpi-review').innerText = review;
+        document.getElementById('kpi-abstain').innerText = abstain;
+
+        renderLedger(currentDecisions);
+        if (currentDecisions.length > 0) {
+          loadWorkbench(currentDecisions[0]);
+        }
+      } catch (err) {
+        console.error('Run failed:', err);
+      }
+    }
+
+    function renderLedger(decisions) {
+      const body = document.getElementById('ledger-body');
+      body.innerHTML = '';
+      decisions.forEach((d, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-graphite-elevated cursor-pointer transition-colors';
+        tr.onclick = () => { loadWorkbench(d); switchTab('workbench'); };
+
+        const stateColor = d.state === 'MATCHED' ? 'text-signal-teal border-signal-teal/40 bg-signal-teal-dim'
+          : (d.state === 'REVIEW' ? 'text-verification-amber border-verification-amber bg-verification-amber-dim'
+          : 'text-muted-steel border-steel-dim bg-steel-dim/20');
+
+        tr.innerHTML = `
+          <td class="py-3 px-4 text-warm-white">${d.decision_id}</td>
+          <td class="py-3 px-4 text-muted-steel">${d.rule_id}</td>
+          <td class="py-3 px-4 text-muted-steel">${d.store_zone}</td>
+          <td class="py-3 px-4 text-warm-white">${d.item_name}</td>
+          <td class="py-3 px-4 text-right">
+            <span class="px-2 py-0.5 text-[10px] font-semibold border ${stateColor}">${d.state}</span>
+          </td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    function loadWorkbench(d) {
+      document.getElementById('workbench-zone-tag').innerText = d.store_zone;
+      document.getElementById('reticle-label').innerText = `${d.item_name} (${d.state})`;
+      document.getElementById('dossier-id').innerText = d.decision_id;
+      document.getElementById('dossier-rule').innerText = d.rule_id;
+      document.getElementById('dossier-action').innerText = d.recommended_action;
+
+      const badge = document.getElementById('dossier-state-badge');
+      badge.innerText = d.state;
+      badge.className = 'px-2 py-0.5 font-bold border ' + 
+        (d.state === 'MATCHED' ? 'bg-signal-teal-dim text-signal-teal border-signal-teal'
+        : (d.state === 'REVIEW' ? 'bg-verification-amber-dim text-verification-amber border-verification-amber'
+        : 'bg-steel-dim/20 text-muted-steel border-steel-dim'));
+
+      const reticleBox = document.getElementById('reticle-box');
+      reticleBox.className = 'relative border-2 p-3 text-center font-mono text-xs ' +
+        (d.state === 'MATCHED' ? 'border-signal-teal bg-signal-teal-dim/10'
+        : (d.state === 'REVIEW' ? 'border-verification-amber bg-verification-amber-dim/10'
+        : 'border-steel-dim bg-steel-dim/10'));
+
+      const cand = (d.candidates && d.candidates[0]) ? d.candidates[0] : null;
+      if (cand) {
+        document.getElementById('dossier-scan').innerText = cand.s_id || 'N/A';
+        document.getElementById('dossier-cost').innerText = cand.cost !== null ? cand.cost.toFixed(3) : 'N/A';
+        document.getElementById('dossier-margin').innerText = cand.margin !== null ? cand.margin.toFixed(3) : '> 0.10';
+        document.getElementById('cost-term-t').innerText = cand.T !== null ? cand.T.toFixed(2) : '-';
+        document.getElementById('cost-term-z').innerText = cand.Z !== null ? cand.Z.toFixed(2) : 'unavail';
+        document.getElementById('cost-term-s').innerText = cand.S !== null ? cand.S.toFixed(2) : 'unavail';
+        document.getElementById('cost-term-f').innerText = cand.F !== null ? cand.F.toFixed(2) : '-';
+      } else {
+        document.getElementById('dossier-scan').innerText = 'NONE';
+        document.getElementById('dossier-cost').innerText = 'N/A';
+        document.getElementById('dossier-margin').innerText = 'N/A';
+        document.getElementById('cost-term-t').innerText = '-';
+        document.getElementById('cost-term-z').innerText = '-';
+        document.getElementById('cost-term-s').innerText = '-';
+        document.getElementById('cost-term-f').innerText = '-';
+      }
+    }
+
+    async function loadEvaluation() {
+      try {
+        const res = await fetch('/api/evaluation');
+        const data = await res.json();
+        const tbody = document.getElementById('eval-sla-body');
+        tbody.innerHTML = '';
+        (data.sla_matrix || []).forEach(row => {
+          const tr = document.createElement('tr');
+          const isCompliant = row.status.includes('COMPLIANT') || row.status.includes('CERTIFIED');
+          const statusClass = isCompliant ? 'text-signal-teal' : 'text-verification-amber font-semibold';
+
+          tr.innerHTML = `
+            <td class="py-3 px-4 text-warm-white">${row.parameter}</td>
+            <td class="py-3 px-4 text-muted-steel">${row.target}</td>
+            <td class="py-3 px-4 text-warm-white">${row.measured}</td>
+            <td class="py-3 px-4 text-right ${statusClass}">${row.status}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error('Failed to load evaluation:', err);
+      }
+    }
+
+    async function applyConfig() {
+      const payload = {
+        lambda_t: parseFloat(document.getElementById('slider-lambda-t').value),
+        lambda_z: parseFloat(document.getElementById('slider-lambda-z').value),
+        lambda_s: parseFloat(document.getElementById('slider-lambda-s').value),
+        lambda_f: parseFloat(document.getElementById('slider-lambda-f').value),
+        tau_match: parseFloat(document.getElementById('slider-tau-match').value),
+      };
+      await fetch('/api/config', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+      runReconciliation();
+      switchTab('overview');
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadStatus();
+      runReconciliation();
+    });
+  </script>
+</body>
+</html>

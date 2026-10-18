@@ -1,0 +1,28 @@
+# TraceCart Policy and Matching Configuration
+# Pre-registration baseline parameters
+
+lambda_t: 0.50
+lambda_z: 0.15
+lambda_s: 0.25
+lambda_f: 0.10
+
+tau_match: 0.50
+w_gate: 10.0
+w_norm: 10.0
+delta_amb: 0.10
+zone_strict: false
+
+det_conf_min: 0.45
+track_continuity_min: 0.70
+gap_max_s_max: 1.0
+n_frames_min: 8
+n_persons_max: 1
+luma_min: 40.0
+luma_max: 220.0
+blur_var_min: 50.0
+
+grace_s: 20.0
+min_dt: 0.3
+max_dt: 15.0
+min_track_frames: 8
+fps_assumed: 30.0

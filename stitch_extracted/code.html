@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TraceCart — Evidence-First Vision AI for Mobile Scan & Go</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#0B0F12',
+            graphite: '#151B1F',
+            'graphite-elevated': '#1B2329',
+            'warm-white': '#F4F3EE',
+            'muted-steel': '#859197',
+            'steel-dim': '#4A555B',
+            'signal-teal': '#54D8C4',
+            'signal-teal-dim': 'rgba(84, 216, 196, 0.12)',
+            'muted-lime': '#C7E66B',
+            'verification-amber': '#D9A441',
+            'verification-amber-dim': 'rgba(217, 164, 65, 0.12)',
+            'border-subtle': '#293237',
+            'border-light': '#36434A'
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['Geist Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0B0F12;
+      color: #F4F3EE;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      letter-spacing: -0.011em;
+    }
+    .grid-matrix {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(41, 50, 55, 0.35) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(41, 50, 55, 0.35) 1px, transparent 1px);
+    }
+    .reticle-corner {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-color: #54D8C4;
+    }
+  </style>
+</head>
+<body class="selection:bg-signal-teal selection:text-obsidian antialiased">
+
+  <!-- Top Minimal Nav Bar -->
+  <header class="fixed top-0 left-0 right-0 z-50 h-16 border-b border-border-subtle bg-obsidian/90 backdrop-blur-md px-6 lg:px-12 flex items-center justify-between">
+    <!-- Brand / Wordmark -->
+    <div class="flex items-center space-x-6">
+      <a href="#hero" class="flex items-center space-x-3 group">
+        <div class="w-6 h-6 border border-signal-teal flex items-center justify-center p-1 bg-signal-teal-dim">
+          <div class="w-1.5 h-1.5 bg-signal-teal"></div>
+        </div>
+        <span class="font-mono text-sm tracking-widest font-semibold uppercase text-warm-white group-hover:text-signal-teal transition-colors">
+          TRACE<span class="text-muted-steel font-normal">CART</span>
+        </span>
+      </a>
+      <div class="h-4 w-[1px] bg-border-subtle hidden sm:block"></div>
+      <span class="font-mono text-[11px] text-muted-steel tracking-wide hidden md:inline-block">
+        SYS.REV: 3.4.1 // EV-VISION-CORE
+      </span>
+    </div>
+
+    <!-- Navigation Links -->
+    <nav class="hidden lg:flex items-center space-x-8 text-xs font-medium tracking-wide uppercase font-mono text-muted-steel">
+      <a href="#product" class="hover:text-warm-white transition-colors">Product</a>
+      <a href="#how-it-works" class="hover:text-warm-white transition-colors">How It Works</a>
+      <a href="#evidence" class="hover:text-warm-white transition-colors">Evidence Architecture</a>
+      <a href="#evaluation" class="hover:text-warm-white transition-colors">Evaluation Lab</a>
+    </nav>
+
+    <!-- CTAs & Route B Switcher -->
+    <div class="flex items-center space-x-4">
+      <a href="#console-preview" class="hidden sm:inline-flex items-center text-xs font-mono text-muted-steel hover:text-warm-white transition-colors">
+        System Specs
+      </a>
+      <a href="#route-command-center" onclick="document.getElementById('route-command-center').scrollIntoView({behavior:'smooth'});" class="inline-flex items-center space-x-2 px-4 py-2 border border-signal-teal text-signal-teal bg-signal-teal-dim hover:bg-signal-teal hover:text-obsidian font-mono text-xs font-medium uppercase tracking-wider transition-all duration-150">
+        <span class="w-2 h-2 rounded-full bg-signal-teal animate-pulse"></span>
+        <span>Open Command Center</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- MAIN HOMEPAGE / (Route A) -->
+  <main class="pt-16">
+    <!-- Hero Section -->
+    <section id="hero" class="relative min-h-[92vh] flex flex-col justify-between border-b border-border-subtle px-6 lg:px-12 pt-16 pb-12 overflow-hidden">
+      <!-- Grid Background overlay -->
+      <div class="absolute inset-0 grid-matrix opacity-40 pointer-events-none"></div>
+
+      <!-- Top Technical Status Bar -->
+      <div class="relative z-10 flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-muted-steel border-b border-border-subtle pb-4">
+        <div class="flex items-center space-x-4">
+          <span class="flex items-center space-x-2">
+            <span class="w-1.5 h-1.5 bg-signal-teal rounded-full"></span>
+            <span class="text-warm-white">RETAIL EVENT RECONCILIATION ENGINE</span>
+          </span>
+          <span class="text-steel-dim">/</span>
+          <span>ENTERPRISE INGEST: 120 FPS STEREO VISION</span>
+        </div>
+        <div class="flex items-center space-x-6 text-[11px]">
+          <span>TEMPORAL MATCH WINDOW: ±1.8s</span>
+          <span class="hidden sm:inline text-steel-dim">|</span>
+          <span class="text-muted-lime">ZERO BIOMETRIC LOGGING</span>
+        </div>
+      </div>
+
+      <!-- Hero Statement & Narrative -->
+      <div class="relative z-10 my-auto py-12 max-w-5xl">
+        <div class="inline-block px-2.5 py-1 mb-6 border border-border-subtle bg-graphite font-mono text-[11px] text-muted-steel uppercase tracking-widest">
+          Deterministic Auditability // Mobile Scan & Go
+        </div>
+        <h1 class="text-4xl sm:text-6xl lg:text-7xl font-normal tracking-tight text-warm-white leading-[1.08] mb-8">
+          Every movement.<br>
+          <span class="text-muted-steel font-light">Accounted for.</span>
+        </h1>
+        <p class="text-lg sm:text-xl text-muted-steel max-w-2xl font-normal leading-relaxed mb-10">
+          Reconcile physical product flow with mobile scan events. Surface unresolved discrepancies with auditable evidence, not statistical assumptions.
+        </p>
+
+        <!-- CTA Cluster -->
+        <div class="flex flex-wrap items-center gap-4 pt-2">
+          <a href="#route-command-center" class="inline-flex items-center space-x-3 px-6 py-3.5 bg-warm-white text-obsidian hover:bg-signal-teal hover:text-obsidian font-mono text-xs font-semibold uppercase tracking-wider transition-colors duration-150 shadow-sm">
+            <span>Open Command Center</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </a>
+          <a href="#how-it-works" class="inline-flex items-center space-x-2 px-6 py-3.5 border border-border-subtle bg-graphite text-warm-white hover:border-muted-steel font-mono text-xs font-medium uppercase tracking-wider transition-colors">
+            <span>Explore The System</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Hero Footing Metrics & Verification Principle -->
+      <div class="relative z-10 pt-8 border-t border-border-subtle grid grid-cols-1 md:grid-cols-3 gap-6 font-mono">
+        <div class="space-y-1">
+          <div class="text-[11px] text-muted-steel uppercase tracking-wider">Core Operating Doctrine</div>
+          <div class="text-sm text-warm-white font-medium">"Match what moved with what was scanned."</div>
+        </div>
+        <div class="space-y-1">
+          <div class="text-[11px] text-muted-steel uppercase tracking-wider">Proportionate Intervention</div>
+          <div class="text-sm text-warm-white font-medium">"Act only when the evidence is strong."</div>
+        </div>
+        <div class="space-y-1 flex md:justify-end items-center">
+          <div class="text-xs text-muted-steel flex items-center space-x-3">
+            <span class="w-2 h-2 border border-verification-amber bg-verification-amber-dim"></span>
+            <span>HUMAN IN THE LOOP GOVERNANCE</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scroll Narrative / Interactive Cinematic Video Viewport (tracecart-hero.mp4 simulation) -->
+    <section id="how-it-works" class="relative border-b border-border-subtle bg-graphite">
+      <!-- Section Header -->
+      <div class="px-6 lg:px-12 py-8 border-b border-border-subtle flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
+        <div class="flex items-center space-x-3">
+          <span class="text-signal-teal">[SCROLL-CONTROLLED PHYSICAL RECONCILIATION]</span>
+          <span class="text-steel-dim">//</span>
+          <span class="text-muted-steel">CINEMATIC ASSET: tracecart-hero.mp4</span>
+        </div>
+        <div class="text-muted-steel">
+          PHASE-LOCK: DUAL SYNCHRONIZED STREAM PIPELINE
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 min-h-[750px]">
+        <!-- Left: 3D Retail Space & Computer Vision Tracking Simulation -->
+        <div class="lg:col-span-7 relative bg-obsidian border-b lg:border-b-0 lg:border-r border-border-subtle flex flex-col justify-between p-6 sm:p-10 overflow-hidden">
+          <!-- Ambient Overlay / Grid -->
+          <div class="absolute inset-0 grid-matrix opacity-20 pointer-events-none"></div>
+
+          <!-- Video Mock Frame & 3D Spatial Visualizer -->
+          <div class="relative z-10 w-full h-full min-h-[480px] border border-border-subtle bg-[#0c1216] flex flex-col justify-between p-6">
+            <!-- Simulated Camera Feed Tag -->
+            <div class="flex items-center justify-between text-[11px] font-mono">
+              <div class="flex items-center space-x-2 bg-obsidian/80 px-2.5 py-1 border border-border-subtle text-signal-teal">
+                <span class="w-1.5 h-1.5 rounded-full bg-signal-teal animate-ping"></span>
+                <span>CAM_ZONE_04 [SHELF_BAY_A2]</span>
+              </div>
+              <div class="text-muted-steel bg-obsidian/80 px-2.5 py-1 border border-border-subtle">
+                FPS: 59.94 // T-STAMP: 14:32:08.412
+              </div>
+            </div>
+
+            <!-- 3D Vector Geometry / Bounding Matrix & Cart Trajectory -->
+            <div class="relative my-auto py-12 flex flex-col items-center justify-center">
+              <!-- Visualized Physical Interaction -->
+              <div class="relative w-72 h-72 border border-dashed border-border-subtle rounded-none flex items-center justify-center">
+                <!-- Zone reticles -->
+                <div class="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-signal-teal"></div>
+                <div class="absolute -top-1 -right-1 w-3 h-3 border-t-2 border-r-2 border-signal-teal"></div>
+                <div class="absolute -bottom-1 -left-1 w-3 h-3 border-b-2 border-l-2 border-signal-teal"></div>
+                <div class="absolute -bottom-1 -right-1 w-3 h-3 border-b-2 border-r-2 border-signal-teal"></div>
+
+                <!-- Depth Grid Vector Plane -->
+                <div class="w-56 h-56 border border-border-subtle/50 rotate-45 flex items-center justify-center relative">
+                  <div class="w-40 h-40 border border-signal-teal/30 flex items-center justify-center">
+                    <div class="w-20 h-20 border border-verification-amber/40 animate-pulse"></div>
+                  </div>
+                </div>
+
+                <!-- Dynamic Tracking Annotations -->
+                <div class="absolute top-8 left-6 bg-obsidian/90 border border-signal-teal px-2 py-1 text-[10px] font-mono text-signal-teal">
+                  ITEM_PICK: ART_9042 // PROB: 0.984
+                </div>
+                <div class="absolute bottom-6 right-6 bg-obsidian/90 border border-verification-amber px-2 py-1 text-[10px] font-mono text-verification-amber">
+                  CART_DEPOSIT: T+1.24s // PENDING SCAN
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom Audio/Video Scrub Controls & Video Filename Label -->
+            <div class="flex items-center justify-between pt-4 border-t border-border-subtle/80 text-[11px] font-mono text-muted-steel">
+              <span class="text-warm-white">CINEMATIC SEQUENCE // SCROLL INTERPOLATION ACTIVE</span>
+              <span class="text-steel-dim">asset: tracecart-hero.mp4 (4K Prores 422)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: 4-Stage Scroll Narrative Progression -->
+        <div class="lg:col-span-5 flex flex-col justify-between p-8 sm:p-12 space-y-10">
+          <div class="space-y-2">
+            <span class="font-mono text-xs uppercase tracking-widest text-signal-teal">The 4-Step Operational Pipeline</span>
+            <h2 class="text-2xl sm:text-3xl font-normal text-warm-white tracking-tight">
+              Deterministic evidence synthesis.
+            </h2>
+          </div>
+
+          <!-- The Four Ideas Accordion / Step Blocks -->
+          <div class="space-y-6">
+            <!-- Step 1: OBSERVE -->
+            <div class="group border-l-2 border-signal-teal pl-6 py-2">
+              <div class="font-mono text-xs text-signal-teal tracking-wider uppercase mb-1">01 / OBSERVE</div>
+              <h3 class="text-lg font-medium text-warm-white mb-1.5">Micro-Event Extraction</h3>
+              <p class="text-sm text-muted-steel leading-relaxed">
+                Optical sensor streams isolate physical product interactions in 3D shelf space—shelf departures, hand-to-cart transfers, and volume displace without recording biometric identities.
+              </p>
+            </div>
+
+            <!-- Step 2: RECONCILE -->
+            <div class="border-l-2 border-border-subtle hover:border-signal-teal transition-colors pl-6 py-2">
+              <div class="font-mono text-xs text-muted-steel tracking-wider uppercase mb-1">02 / RECONCILE</div>
+              <h3 class="text-lg font-medium text-warm-white mb-1.5">Temporal Transaction Alignment</h3>
+              <p class="text-sm text-muted-steel leading-relaxed">
+                Visual event records are cross-checked against live barcode / RFID events emitted by the customer's mobile scan application inside calibrated temporal windows (±1.8s).
+              </p>
+            </div>
+
+            <!-- Step 3: EVALUATE -->
+            <div class="border-l-2 border-border-subtle hover:border-verification-amber transition-colors pl-6 py-2">
+              <div class="font-mono text-xs text-muted-steel tracking-wider uppercase mb-1">03 / EVALUATE</div>
+              <h3 class="text-lg font-medium text-warm-white mb-1.5">Evidence Quality & Ambiguity Grading</h3>
+              <p class="text-sm text-muted-steel leading-relaxed">
+                Occlusion levels, optical lighting variance, and barcode ambiguity are mathematically scored. If confidence degrades below audit standards, the system disallows automated guesses.
+              </p>
+            </div>
+
+            <!-- Step 4: RESPOND -->
+            <div class="border-l-2 border-border-subtle hover:border-warm-white transition-colors pl-6 py-2">
+              <div class="font-mono text-xs text-muted-steel tracking-wider uppercase mb-1">04 / RESPOND</div>
+              <h3 class="text-lg font-medium text-warm-white mb-1.5">Categorical State Resolution</h3>
+              <p class="text-sm text-muted-steel leading-relaxed">
+                Returns three explicit verdicts: <span class="text-signal-teal font-mono">MATCHED</span> (zero disruption), <span class="text-verification-amber font-mono">REVIEW</span> (targeted verification packet for store host), or <span class="text-muted-steel font-mono">ABSTAIN</span> (confidence criteria unsatisfied; proceed silently).
+              </p>
+            </div>
+          </div>
+
+          <!-- Bottom Operational Metric -->
+          <div class="pt-6 border-t border-border-subtle flex items-center justify-between text-xs font-mono text-muted-steel">
+            <span>AUDIT TRAIL IMMUTABILITY: 100%</span>
+            <span class="text-warm-white font-medium">ZERO ASSUMPTIONS</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Console Preview / Interactive Workbench Snippet Below Hero -->
+    <section id="console-preview" class="px-6 lg:px-12 py-16 border-b border-border-subtle bg-obsidian">
+      <div class="max-w-7xl mx-auto space-y-10">
+        <!-- Section Title & Descriptor -->
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-border-subtle">
+          <div>
+            <div class="font-mono text-xs text-signal-teal uppercase tracking-widest mb-2">Live Architecture Verification</div>
+            <h2 class="text-3xl sm:text-4xl font-normal text-warm-white tracking-tight">
+              Operational evidence workbench.
+            </h2>
+          </div>
+          <p class="text-sm text-muted-steel max-w-md font-mono">
+            Every transaction event preserves synchronized optical frames, raw telemetry, and computed candidate associations for auditability.
+          </p>
+        </div>
+
+        <!-- The 3 Decision States Specification Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- State 1: MATCHED -->
+          <div class="p-6 border border-border-subtle bg-graphite space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-1 text-xs font-mono font-semibold uppercase tracking-wider bg-signal-teal-dim text-signal-teal border border-signal-teal/40">
+                MATCHED
+              </span>
+              <span class="font-mono text-xs text-muted-steel">STATE // 01</span>
+            </div>
+            <h4 class="text-base font-medium text-warm-white">Physical & Digital Parity</h4>
+            <p class="text-xs text-muted-steel leading-relaxed">
+              Optical track ID correlates with mobile barcode emission within 410ms. Shelf delta matches cart payload. Zero intervention required.
+            </p>
+            <div class="pt-3 border-t border-border-subtle font-mono text-[11px] text-signal-teal">
+              AUTO-CLEARED FOR EXIT
+            </div>
+          </div>
+
+          <!-- State 2: REVIEW -->
+          <div class="p-6 border border-verification-amber/40 bg-graphite space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-1 text-xs font-mono font-semibold uppercase tracking-wider bg-verification-amber-dim text-verification-amber border border-verification-amber">
+                REVIEW
+              </span>
+              <span class="font-mono text-xs text-verification-amber">STATE // 02</span>
+            </div>
+            <h4 class="text-base font-medium text-warm-white">Discrepancy Requiring Verification</h4>
+            <p class="text-xs text-muted-steel leading-relaxed">
+              Observed physical pick without correlating scan event within threshold window (+45s). Surfaces proportionate evidence card for store associate.
+            </p>
+            <div class="pt-3 border-t border-border-subtle font-mono text-[11px] text-verification-amber">
+              SURFACE HUMAN VERIFICATION PACKET
+            </div>
+          </div>
+
+          <!-- State 3: ABSTAIN -->
+          <div class="p-6 border border-border-subtle bg-graphite space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-1 text-xs font-mono font-semibold uppercase tracking-wider bg-steel-dim/20 text-muted-steel border border-steel-dim">
+                ABSTAIN
+              </span>
+              <span class="font-mono text-xs text-muted-steel">STATE // 03</span>
+            </div>
+            <h4 class="text-base font-medium text-warm-white">Confidence Gate Unmet</h4>
+            <p class="text-xs text-muted-steel leading-relaxed">
+              Severe visual occlusion or ambiguous hand trajectory. System expressly declines to guess, preventing false customer accusations.
+            </p>
+            <div class="pt-3 border-t border-border-subtle font-mono text-[11px] text-muted-steel">
+              SUPPRESS NOTIFICATION // LOG TELEMETRY
+            </div>
+          </div>
+        </div>
+
+        <!-- Mini Interactive Timeline Record Demonstration -->
+        <div class="border border-border-subtle bg-graphite p-6">
+          <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-border-subtle font-mono text-xs">
+            <span class="text-warm-white font-semibold">REPRESENTATIVE DISCREPANCY RECORD // REF_EV-2024-8841</span>
+            <div class="flex items-center space-x-4 text-muted-steel">
+              <span>ZONE: BEVERAGES_COLD_CASE_02</span>
+              <span>TIMESTAMP: 14:28:19.044</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-6">
+            <!-- Left: Visual Event Record -->
+            <div class="lg:col-span-4 space-y-3 font-mono text-xs">
+              <div class="text-muted-steel uppercase tracking-wider text-[11px]">Visual Event Extract</div>
+              <div class="p-3 bg-obsidian border border-border-subtle space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-muted-steel">Action:</span>
+                  <span class="text-warm-white font-medium">SHELF_PICK & CART_PLACE</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-muted-steel">Target Item:</span>
+                  <span class="text-warm-white font-medium">Sparkling Mineral 750ml</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-muted-steel">Visual Confidence:</span>
+                  <span class="text-signal-teal font-medium">96.8%</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-muted-steel">Track ID:</span>
+                  <span class="text-warm-white font-mono">TRK_88419B</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Center: Candidate Transaction Record -->
+            <div class="lg:col-span-4 space-y-3 font-mono text-xs">
+              <div class="text-muted-steel uppercase tracking-wider text-[11px]">Mobile App Stream</div>
+              <div class="p-3 bg-obsidian border border-border-subtle space-y-2">
+                <div class="flex justify-between">
+                  <span class="text-muted-steel">Cart Session:</span>
+                  <span class="text-warm-white font-mono">SESS_9921_CART04</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-muted-steel">Scanned Item:</span>
+                  <span class="text-verification-amber font-medium">NO SCAN DETECTED</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-muted-steel">Last Scan:</span>
+                  <span class="text-muted-steel">T-64s (Artisan Sourdough)</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-muted-steel">Sync Delta:</span>
+                  <span class="text-verification-amber font-medium">+42.1s (Expired)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Decision & Proportionate Guidance -->
+            <div class="lg:col-span-4 space-y-3 font-mono text-xs">
+              <div class="text-muted-steel uppercase tracking-wider text-[11px]">Computed Resolution</div>
+              <div class="p-3 bg-obsidian border border-verification-amber space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-muted-steel">Decision:</span>
+                  <span class="px-2 py-0.5 bg-verification-amber-dim text-verification-amber font-bold">REVIEW</span>
+                </div>
+                <p class="text-muted-steel text-[11px] leading-relaxed pt-1">
+                  Observed pick with no scan. Associate guidance: "Politely ask customer if the mobile scanner registered their sparkling mineral bottle at Bay 2."
+                </p>
+                <div class="text-[10px] text-muted-steel pt-1 border-t border-border-subtle">
+                  Zero criminal accusation. Respect customer dignity.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Primary Transition Banner to Route B -->
+        <div class="border border-signal-teal/50 bg-graphite-elevated p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div class="space-y-2">
+            <div class="font-mono text-xs text-signal-teal uppercase tracking-widest">Enterprise Command Environment</div>
+            <h3 class="text-2xl font-normal text-warm-white">Deploy TraceCart inside your operations control room.</h3>
+            <p class="text-sm text-muted-steel">Explore the live working console with real event playback, telemetry inspection, and the evaluation suite.</p>
+          </div>
+          <a href="#route-command-center" class="whitespace-nowrap px-8 py-4 bg-signal-teal text-obsidian font-mono text-xs font-semibold uppercase tracking-wider hover:bg-warm-white transition-colors">
+            Launch Command Center →
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROUTE B: OPERATIONS COMMAND CENTER /console -->
+    <section id="route-command-center" class="min-h-screen bg-obsidian border-t-4 border-signal-teal">
+      <!-- Route B Header Indicator Banner -->
+      <div class="bg-graphite-elevated border-b border-border-subtle px-6 py-3 flex items-center justify-between text-xs font-mono">
+        <div class="flex items-center space-x-3">
+          <span class="px-2 py-0.5 bg-signal-teal text-obsidian font-bold">ROUTE B</span>
+          <span class="text-warm-white font-medium">TRACE CART OPERATIONS COMMAND CENTER</span>
+          <span class="text-muted-steel">/console</span>
+        </div>
+        <div class="flex items-center space-x-4 text-muted-steel">
+          <span class="flex items-center space-x-1.5">
+            <span class="w-2 h-2 rounded-full bg-signal-teal"></span>
+            <span class="text-warm-white">CONNECTED</span>
+          </span>
+          <span class="hidden sm:inline">CLUSTER: US-EAST-RETAIL-01</span>
+        </div>
+      </div>
+
+      <!-- App Console Container with Persistent Sidebar -->
+      <div class="flex min-h-[calc(100vh-100px)]">
+        <!-- Persistent Compact Sidebar -->
+        <aside class="w-64 border-r border-border-subtle bg-graphite flex flex-col justify-between p-4 flex-shrink-0 hidden md:flex">
+          <div class="space-y-6">
+            <!-- Environment / Store Selector -->
+            <div class="p-3 border border-border-subtle bg-obsidian space-y-1">
+              <div class="text-[10px] font-mono text-muted-steel uppercase tracking-wider">Active Store Node</div>
+              <div class="text-xs font-mono text-warm-white font-semibold flex items-center justify-between">
+                <span>METRO STORE #1042</span>
+                <span class="text-signal-teal text-[10px]">ACTIVE</span>
+              </div>
+            </div>
+
+            <!-- Navigation Menu Items -->
+            <nav class="space-y-1 font-mono text-xs">
+              <button onclick="switchTab('overview')" id="tab-btn-overview" class="w-full flex items-center justify-between px-3 py-2.5 text-left bg-obsidian border-l-2 border-signal-teal text-warm-white font-medium">
+                <span class="flex items-center space-x-2.5">
+                  <svg class="w-4 h-4 text-signal-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                  <span>Overview</span>
+                </span>
+                <span class="text-[10px] text-signal-teal font-mono">LIVE</span>
+              </button>
+
+              <button onclick="switchTab('workbench')" id="tab-btn-workbench" class="w-full flex items-center justify-between px-3 py-2.5 text-left text-muted-steel hover:text-warm-white hover:bg-obsidian/50 transition-colors">
+                <span class="flex items-center space-x-2.5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                  <span>Reconciliation</span>
+                </span>
+                <span class="px-1.5 py-0.2 bg-verification-amber/20 text-verification-amber text-[10px] rounded-none">3 PENDING</span>
+              </button>
+
+              <button onclick="switchTab('timeline')" id="tab-btn-timeline" class="w-full flex items-center space-x-2.5 px-3 py-2.5 text-left text-muted-steel hover:text-warm-white hover:bg-obsidian/50 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Event Timeline</span>
+              </button>
+
+              <button onclick="switchTab('explorer')" id="tab-btn-explorer" class="w-full flex items-center space-x-2.5 px-3 py-2.5 text-left text-muted-steel hover:text-warm-white hover:bg-obsidian/50 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <span>Evidence Explorer</span>
+              </button>
+
+              <button onclick="switchTab('evaluation')" id="tab-btn-evaluation" class="w-full flex items-center justify-between px-3 py-2.5 text-left text-muted-steel hover:text-warm-white hover:bg-obsidian/50 transition-colors">
+                <span class="flex items-center space-x-2.5">
+                  <svg class="w-4 h-4 text-muted-lime" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                  <span>Evaluation Lab</span>
+                </span>
+                <span class="text-[10px] text-muted-lime font-mono">BENCHMARK</span>
+              </button>
+
+              <button onclick="switchTab('settings')" id="tab-btn-settings" class="w-full flex items-center space-x-2.5 px-3 py-2.5 text-left text-muted-steel hover:text-warm-white hover:bg-obsidian/50 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span>System Settings</span>
+              </button>
+            </nav>
+          </div>
+
+          <!-- Bottom Footer Details -->
+          <div class="pt-4 border-t border-border-subtle font-mono text-[11px] text-muted-steel space-y-2">
+            <div class="flex justify-between">
+              <span>ENGINE:</span>
+              <span class="text-warm-white">v3.4.1-PROD</span>
+            </div>
+            <div class="flex justify-between">
+              <span>ENV:</span>
+              <span class="text-signal-teal">STAGING-RETAIL-04</span>
+            </div>
+            <div class="flex justify-between">
+              <span>CAMERA FEEDS:</span>
+              <span class="text-warm-white">18 / 18 OK</span>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Command Center Main Workspace -->
+        <div class="flex-1 flex flex-col min-w-0 bg-obsidian">
+          <!-- Top Sub-Header: Controls, Selector & Run Button -->
+          <div class="h-14 border-b border-border-subtle px-6 flex items-center justify-between gap-4 bg-graphite">
+            <div class="flex items-center space-x-4">
+              <span class="font-mono text-xs font-semibold text-warm-white uppercase">RECONCILIATION ENGINE CONSOLE</span>
+              <span class="text-steel-dim hidden sm:inline">|</span>
+              <div class="hidden sm:flex items-center space-x-2 text-xs font-mono text-muted-steel">
+                <span>ACTIVE RUN:</span>
+                <span class="text-warm-white bg-obsidian px-2 py-0.5 border border-border-subtle">RUN_2025_02_24_SESSION_A</span>
+              </div>
+            </div>
+
+            <div class="flex items-center space-x-3 font-mono text-xs">
+              <div class="text-muted-steel hidden lg:inline">
+                LAST PROCESSED: <span class="text-warm-white">14:38:02.19 UTC</span>
+              </div>
+              <button onclick="triggerDemoRun()" class="px-4 py-1.5 bg-signal-teal text-obsidian font-semibold hover:bg-warm-white transition-colors uppercase tracking-wider flex items-center space-x-2">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Start Reconciliation Run</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Dynamic Tab Content Views -->
+          <div class="p-6 overflow-y-auto space-y-6">
+
+            <!-- TAB 1: OPERATIONS OVERVIEW -->
+            <div id="view-overview" class="space-y-6">
+              <!-- KPI Status Metric Row (Real backend values, no cartoon icons) -->
+              <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 font-mono">
+                <!-- Visual Events Processed -->
+                <div class="p-4 bg-graphite border border-border-subtle">
+                  <div class="text-[11px] text-muted-steel uppercase tracking-wider">Visual Events</div>
+                  <div class="text-2xl lg:text-3xl font-medium text-warm-white mt-1">1,492</div>
+                  <div class="text-[10px] text-signal-teal mt-1">100% Optical Ingest</div>
+                </div>
+
+                <!-- Candidate Associations -->
+                <div class="p-4 bg-graphite border border-border-subtle">
+                  <div class="text-[11px] text-muted-steel uppercase tracking-wider">Candidate Assocs</div>
+                  <div class="text-2xl lg:text-3xl font-medium text-warm-white mt-1">1,488</div>
+                  <div class="text-[10px] text-muted-steel mt-1">Temporal Alignment ±1.8s</div>
+                </div>
+
+                <!-- MATCHED Count -->
+                <div class="p-4 bg-graphite border border-signal-teal/30">
+                  <div class="text-[11px] text-signal-teal uppercase tracking-wider">MATCHED</div>
+                  <div class="text-2xl lg:text-3xl font-medium text-signal-teal mt-1">1,446</div>
+                  <div class="text-[10px] text-muted-steel mt-1">97.17% Clean Parity</div>
+                </div>
+
+                <!-- REVIEW Count -->
+                <div class="p-4 bg-graphite border border-verification-amber/40">
+                  <div class="text-[11px] text-verification-amber uppercase tracking-wider">REVIEW</div>
+                  <div class="text-2xl lg:text-3xl font-medium text-verification-amber mt-1">28</div>
+                  <div class="text-[10px] text-verification-amber mt-1">Proportionate Attention</div>
+                </div>
+
+                <!-- ABSTAIN Count -->
+                <div class="p-4 bg-graphite border border-border-subtle">
+                  <div class="text-[11px] text-muted-steel uppercase tracking-wider">ABSTAIN</div>
+                  <div class="text-2xl lg:text-3xl font-medium text-muted-steel mt-1">14</div>
+                  <div class="text-[10px] text-steel-dim mt-1">Sub-Threshold Occlusion</div>
+                </div>
+              </div>
+
+              <!-- Main Split: Live Evidence Stream Table & Diagnostic Panel -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Left: Recent Reconciliation Activity Ledger -->
+                <div class="lg:col-span-8 bg-graphite border border-border-subtle">
+                  <div class="px-5 py-3.5 border-b border-border-subtle flex items-center justify-between font-mono text-xs">
+                    <span class="text-warm-white font-medium">RECENT RECONCILIATION ACTIVITY</span>
+                    <span class="text-muted-steel">AUTOMATIC REFRESH: ACTIVE</span>
+                  </div>
+
+                  <div class="overflow-x-auto">
+                    <table class="w-full text-left font-mono text-xs">
+                      <thead class="bg-obsidian/70 text-muted-steel border-b border-border-subtle uppercase text-[10px] tracking-wider">
+                        <tr>
+                          <th class="py-2.5 px-4">Timestamp</th>
+                          <th class="py-2.5 px-4">Track ID</th>
+                          <th class="py-2.5 px-4">Monitored Zone</th>
+                          <th class="py-2.5 px-4">Product Descriptor</th>
+                          <th class="py-2.5 px-4">Scan Correlation</th>
+                          <th class="py-2.5 px-4 text-right">Verdict</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-border-subtle">
+                        <tr class="hover:bg-graphite-elevated cursor-pointer" onclick="switchTab('workbench')">
+                          <td class="py-3 px-4 text-warm-white">14:38:01.04</td>
+                          <td class="py-3 px-4 text-muted-steel">TRK_88910</td>
+                          <td class="py-3 px-4">BAY_A2_COLD_CASE</td>
+                          <td class="py-3 px-4 text-warm-white">Almond Beverage 1L</td>
+                          <td class="py-3 px-4 text-signal-teal">Delta +0.32s</td>
+                          <td class="py-3 px-4 text-right">
+                            <span class="px-2 py-0.5 bg-signal-teal-dim text-signal-teal text-[10px] font-semibold border border-signal-teal/40">MATCHED</span>
+                          </td>
+                        </tr>
+                        <tr class="hover:bg-graphite-elevated cursor-pointer bg-verification-amber-dim/20" onclick="switchTab('workbench')">
+                          <td class="py-3 px-4 text-warm-white">14:37:44.82</td>
+                          <td class="py-3 px-4 text-verification-amber font-semibold">TRK_88904</td>
+                          <td class="py-3 px-4">BAY_D4_COFFEE_DRY</td>
+                          <td class="py-3 px-4 text-warm-white">Single Origin Roast 250g</td>
+                          <td class="py-3 px-4 text-verification-amber font-medium">No Scan Detected</td>
+                          <td class="py-3 px-4 text-right">
+                            <span class="px-2 py-0.5 bg-verification-amber-dim text-verification-amber text-[10px] font-bold border border-verification-amber">REVIEW</span>
+                          </td>
+                        </tr>
+                        <tr class="hover:bg-graphite-elevated cursor-pointer" onclick="switchTab('workbench')">
+                          <td class="py-3 px-4 text-warm-white">14:36:20.11</td>
+                          <td class="py-3 px-4 text-muted-steel">TRK_88891</td>
+                          <td class="py-3 px-4">BAY_C1_BAKERY</td>
+                          <td class="py-3 px-4 text-warm-white">Sourdough Loaf 500g</td>
+                          <td class="py-3 px-4 text-signal-teal">Delta +0.55s</td>
+                          <td class="py-3 px-4 text-right">
+                            <span class="px-2 py-0.5 bg-signal-teal-dim text-signal-teal text-[10px] font-semibold border border-signal-teal/40">MATCHED</span>
+                          </td>
+                        </tr>
+                        <tr class="hover:bg-graphite-elevated cursor-pointer" onclick="switchTab('workbench')">
+                          <td class="py-3 px-4 text-warm-white">14:35:10.95</td>
+                          <td class="py-3 px-4 text-muted-steel">TRK_88878</td>
+                          <td class="py-3 px-4">BAY_B3_DELI</td>
+                          <td class="py-3 px-4 text-muted-steel">[Occluded Visual Vector]</td>
+                          <td class="py-3 px-4 text-muted-steel">Ambiguous Trajectory</td>
+                          <td class="py-3 px-4 text-right">
+                            <span class="px-2 py-0.5 bg-steel-dim/20 text-muted-steel text-[10px] border border-steel-dim">ABSTAIN</span>
+                          </td>
+                        </tr>
+                        <tr class="hover:bg-graphite-elevated cursor-pointer" onclick="switchTab('workbench')">
+                          <td class="py-3 px-4 text-warm-white">14:34:52.30</td>
+                          <td class="py-3 px-4 text-muted-steel">TRK_88862</td>
+                          <td class="py-3 px-4">BAY_A1_PRODUCE</td>
+                          <td class="py-3 px-4 text-warm-white">Organic Avocados 4pk</td>
+                          <td class="py-3 px-4 text-signal-teal">Delta +0.18s</td>
+                          <td class="py-3 px-4 text-right">
+                            <span class="px-2 py-0.5 bg-signal-teal-dim text-signal-teal text-[10px] font-semibold border border-signal-teal/40">MATCHED</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Pagination & Action Footer -->
+                  <div class="px-5 py-3 border-t border-border-subtle flex items-center justify-between font-mono text-[11px] text-muted-steel">
+                    <span>Showing 5 of 1,492 observed events</span>
+                    <div class="flex items-center space-x-2">
+                      <button class="px-2 py-1 border border-border-subtle bg-obsidian text-muted-steel hover:text-warm-white">Prev</button>
+                      <button class="px-2 py-1 border border-border-subtle bg-obsidian text-warm-white">Next</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right: Diagnostics & Ingest Pipeline Status -->
+                <div class="lg:col-span-4 space-y-6">
+                  <!-- Processing Diagnostics -->
+                  <div class="bg-graphite border border-border-subtle p-5 space-y-4 font-mono text-xs">
+                    <div class="text-warm-white font-medium border-b border-border-subtle pb-2">
+                      PROCESSING DIAGNOSTICS
+                    </div>
+                    <div class="space-y-3">
+                      <div class="flex justify-between">
+                        <span class="text-muted-steel">Stereo Vision Pipeline:</span>
+                        <span class="text-signal-teal">0.82 ms / frame</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="text-muted-steel">Spatial Tracking Latency:</span>
+                        <span class="text-warm-white">42 ms (P99)</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="text-muted-steel">Barcode Ingestion Queue:</span>
+                        <span class="text-warm-white">0 backlogged</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="text-muted-steel">Occlusion Handling:</span>
+                        <span class="text-warm-white">ISO-14443 compliant</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="text-muted-steel">Temporal Drift:</span>
+                        <span class="text-signal-teal">±4ms synchronized</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Human Verification Protocol Reminder -->
+                  <div class="bg-graphite border border-verification-amber/40 p-5 space-y-3 font-mono text-xs">
+                    <div class="text-verification-amber font-semibold flex items-center space-x-2">
+                      <span class="w-2 h-2 bg-verification-amber"></span>
+                      <span>OPERATOR GOVERNANCE POLICY</span>
+                    </div>
+                    <p class="text-muted-steel text-[11px] leading-relaxed">
+                      TraceCart never triggers loud store alarms or accuses customers of theft. Verification events provide courteous prompt cards for floor hosts.
+                    </p>
+                    <div class="pt-2 text-[10px] text-muted-steel border-t border-border-subtle">
+                      Audit Ref: ISO-27001-RET-094
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 2: RECONCILIATION WORKBENCH (Detailed Investigation) -->
+            <div id="view-workbench" class="space-y-6 hidden">
+              <!-- Investigation Bar -->
+              <div class="p-4 bg-graphite border border-border-subtle flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
+                <div class="flex items-center space-x-3">
+                  <span class="px-2 py-0.5 bg-verification-amber text-obsidian font-bold">ACTIVE INVESTIGATION</span>
+                  <span class="text-warm-white font-semibold">INCIDENT_REF: EV-2025-02-88904</span>
+                  <span class="text-muted-steel">// ZONE: BAY_D4_COFFEE_DRY</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                  <button class="px-3 py-1 border border-border-subtle text-muted-steel hover:text-warm-white">Export Audit Dossier</button>
+                  <button class="px-3 py-1 bg-verification-amber text-obsidian font-semibold hover:bg-warm-white">Dispatch Verification Packet</button>
+                </div>
+              </div>
+
+              <!-- Master Split: Left Evidence Playback & Timeline / Right Dossier Breakdown -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Left 7 Cols: Video Evidence Feed & Synced Barcode Timeline -->
+                <div class="lg:col-span-7 space-y-6">
+                  <!-- Visual Evidence Video Area -->
+                  <div class="bg-graphite border border-border-subtle p-4 space-y-3">
+                    <div class="flex items-center justify-between font-mono text-xs pb-2 border-b border-border-subtle">
+                      <span class="text-signal-teal font-medium">OPTICAL TIMELINE RECORD // SYNCHRONIZED STEREO PAIR</span>
+                      <span class="text-muted-steel">CAMERA: CAM_09_BAY_D4</span>
+                    </div>
+
+                    <!-- Simulated Visual Stream Container -->
+                    <div class="relative w-full h-80 bg-obsidian border border-border-subtle flex flex-col justify-between p-4">
+                      <!-- Grid vector overlay -->
+                      <div class="absolute inset-0 grid-matrix opacity-20 pointer-events-none"></div>
+
+                      <div class="relative z-10 flex justify-between font-mono text-[10px]">
+                        <span class="bg-obsidian/80 px-2 py-0.5 border border-border-subtle text-warm-white">BAY_D4 // SHELF_LVL_02</span>
+                        <span class="bg-verification-amber-dim text-verification-amber px-2 py-0.5 border border-verification-amber font-semibold">ACTION DETECTED: PICK_TO_CART</span>
+                      </div>
+
+                      <!-- Bounding Box Annotation in Visual Frame -->
+                      <div class="relative my-auto flex items-center justify-center">
+                        <div class="w-64 h-44 border-2 border-verification-amber relative bg-verification-amber-dim/10">
+                          <div class="absolute -top-5 left-0 bg-verification-amber text-obsidian font-mono text-[10px] font-bold px-1.5 py-0.5">
+                            ITEM: SINGLE ORIGIN COFFEE 250G [CONF: 97.4%]
+                          </div>
+                          <!-- Trajectory line to cart -->
+                          <div class="absolute bottom-2 right-2 border-b-2 border-r-2 border-dashed border-verification-amber w-16 h-12"></div>
+                          <div class="absolute -bottom-6 right-0 font-mono text-[9px] text-verification-amber">
+                            CART_DEPOSIT @ 14:37:44.82
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="relative z-10 flex justify-between items-center font-mono text-[10px] text-muted-steel pt-2 border-t border-border-subtle">
+                        <span>FRAME 28,104 // 60 FPS</span>
+                        <span>TEMPORARY TRACK ID: TRK_88904</span>
+                      </div>
+                    </div>
+
+                    <!-- Synchronized Scrub Timeline Bar -->
+                    <div class="space-y-2 pt-2 font-mono text-xs">
+                      <div class="flex justify-between text-[11px] text-muted-steel">
+                        <span>14:37:30.00</span>
+                        <span class="text-verification-amber font-semibold">EVENT T_0: 14:37:44.82</span>
+                        <span>14:38:00.00</span>
+                      </div>
+                      <div class="relative w-full h-3 bg-obsidian border border-border-subtle">
+                        <div class="absolute top-0 bottom-0 left-[48%] w-1.5 bg-verification-amber"></div>
+                        <!-- Scanned markers -->
+                        <div class="absolute top-0 bottom-0 left-[15%] w-1 bg-signal-teal" title="Scan: Sourdough"></div>
+                        <div class="absolute top-0 bottom-0 left-[88%] w-1 bg-signal-teal" title="Scan: Oat Milk"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right 5 Cols: Detailed Audit Association Dossier -->
+                <div class="lg:col-span-5 space-y-6">
+                  <!-- Association Result Card -->
+                  <div class="bg-graphite border border-verification-amber p-6 space-y-4 font-mono text-xs">
+                    <div class="flex items-center justify-between border-b border-border-subtle pb-3">
+                      <span class="text-muted-steel uppercase tracking-wider text-[11px]">ASSOCIATION COMPUTATION</span>
+                      <span class="px-2 py-0.5 bg-verification-amber text-obsidian font-bold text-[11px]">REVIEW REQUIRED</span>
+                    </div>
+
+                    <div class="space-y-3">
+                      <div>
+                        <div class="text-muted-steel text-[11px]">Computed Association Result</div>
+                        <div class="text-warm-white font-medium text-sm mt-0.5">Physical Pick Without Correlating Barcode Scan</div>
+                      </div>
+
+                      <div class="grid grid-cols-2 gap-4 pt-2 border-t border-border-subtle">
+                        <div>
+                          <div class="text-muted-steel text-[10px]">TIMESTAMP DELTA</div>
+                          <div class="text-verification-amber font-semibold text-sm">+41.2s (Threshold 1.8s)</div>
+                        </div>
+                        <div>
+                          <div class="text-muted-steel text-[10px]">CONFIDENCE SCORE</div>
+                          <div class="text-warm-white font-semibold text-sm">97.4% (Tier 1 Optical)</div>
+                        </div>
+                      </div>
+
+                      <div class="pt-2 border-t border-border-subtle">
+                        <div class="text-muted-steel text-[10px]">DATA-QUALITY FLAGS</div>
+                        <div class="flex flex-wrap gap-1.5 mt-1">
+                          <span class="px-1.5 py-0.5 bg-obsidian border border-border-subtle text-signal-teal text-[10px]">LIGHTING: NOMINAL</span>
+                          <span class="px-1.5 py-0.5 bg-obsidian border border-border-subtle text-signal-teal text-[10px]">OCCLUSION: 0.04 (LOW)</span>
+                          <span class="px-1.5 py-0.5 bg-obsidian border border-border-subtle text-verification-amber text-[10px]">MOBILE_STREAM: CONNECTED</span>
+                        </div>
+                      </div>
+
+                      <div class="pt-3 border-t border-border-subtle">
+                        <div class="text-muted-steel text-[10px]">RECOMMENDED PROPORTIONATE NEXT ACTION</div>
+                        <div class="p-3 bg-obsidian border border-border-subtle text-warm-white text-xs leading-relaxed mt-1">
+                          "Prompt store associate terminal with courteous prompt: Customer in Zone D may have missed scanning the Single Origin Coffee 250g bag."
+                        </div>
+                        <div class="text-[10px] text-muted-steel mt-2">
+                          Auditable record stored in cluster DB for 90 days. Non-accusatory protocol.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 3: EVALUATION LAB (Testing & Precision Suite) -->
+            <div id="view-evaluation" class="space-y-6 hidden">
+              <!-- Evaluation Header & Scenario Selector -->
+              <div class="p-5 bg-graphite border border-border-subtle flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
+                <div>
+                  <div class="text-muted-lime uppercase tracking-widest text-[10px] font-bold">EVALUATION & BENCHMARK LAB</div>
+                  <h3 class="text-lg font-normal text-warm-white">Ground-truth validation & algorithmic precision.</h3>
+                </div>
+                <div class="flex items-center space-x-3">
+                  <select class="px-3 py-1.5 bg-obsidian border border-border-subtle text-warm-white font-mono text-xs">
+                    <option>SCENARIO: HIGH_DENSITY_RUSH_HOUR_10K</option>
+                    <option>SCENARIO: BEVERAGE_COOLER_OCCLUSION_TEST</option>
+                    <option>SCENARIO: FAST_CART_MOVEMENT_NIGHT</option>
+                  </select>
+                  <button class="px-4 py-1.5 bg-muted-lime text-obsidian font-semibold hover:bg-warm-white transition-colors">
+                    Run Evaluation
+                  </button>
+                </div>
+              </div>
+
+              <!-- Measured Metrics Grid -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 font-mono">
+                <div class="p-5 bg-graphite border border-border-subtle space-y-1">
+                  <div class="text-[10px] text-muted-steel uppercase tracking-wider">Event Matching Precision</div>
+                  <div class="text-2xl font-medium text-warm-white">99.42%</div>
+                  <div class="text-[10px] text-signal-teal">Target: ≥99.00% (Passed)</div>
+                </div>
+
+                <div class="p-5 bg-graphite border border-border-subtle space-y-1">
+                  <div class="text-[10px] text-muted-steel uppercase tracking-wider">Event Recall Rate</div>
+                  <div class="text-2xl font-medium text-warm-white">98.81%</div>
+                  <div class="text-[10px] text-signal-teal">Target: ≥98.50% (Passed)</div>
+                </div>
+
+                <div class="p-5 bg-graphite border border-border-subtle space-y-1">
+                  <div class="text-[10px] text-muted-steel uppercase tracking-wider">False Intervention Rate</div>
+                  <div class="text-2xl font-medium text-warm-white">0.08%</div>
+                  <div class="text-[10px] text-muted-lime">Ground Truth Audited</div>
+                </div>
+
+                <div class="p-5 bg-graphite border border-border-subtle space-y-1">
+                  <div class="text-[10px] text-muted-steel uppercase tracking-wider">Abstention Rate (Occluded)</div>
+                  <div class="text-2xl font-medium text-warm-white">0.94%</div>
+                  <div class="text-[10px] text-muted-steel">Safe Zero-Guess Threshold</div>
+                </div>
+              </div>
+
+              <!-- Target-versus-Measured Comparison Table & Failure Case Inspector -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Comparison Matrix -->
+                <div class="lg:col-span-7 bg-graphite border border-border-subtle">
+                  <div class="px-5 py-3 border-b border-border-subtle font-mono text-xs text-warm-white font-medium">
+                    BENCHMARK SPECIFICATION VS. MEASURED RESULTS
+                  </div>
+                  <table class="w-full text-left font-mono text-xs">
+                    <thead class="bg-obsidian/70 text-muted-steel border-b border-border-subtle uppercase text-[10px]">
+                      <tr>
+                        <th class="py-2.5 px-4">Parameter</th>
+                        <th class="py-2.5 px-4">Target SLA</th>
+                        <th class="py-2.5 px-4">Measured</th>
+                        <th class="py-2.5 px-4 text-right">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-border-subtle">
+                      <tr>
+                        <td class="py-3 px-4 text-warm-white">End-to-End Latency (P99)</td>
+                        <td class="py-3 px-4 text-muted-steel">&lt; 150 ms</td>
+                        <td class="py-3 px-4 text-signal-teal">48.2 ms</td>
+                        <td class="py-3 px-4 text-right text-signal-teal">OPTIMAL</td>
+                      </tr>
+                      <tr>
+                        <td class="py-3 px-4 text-warm-white">False Positive Discrepancies</td>
+                        <td class="py-3 px-4 text-muted-steel">&lt; 0.15%</td>
+                        <td class="py-3 px-4 text-signal-teal">0.08%</td>
+                        <td class="py-3 px-4 text-right text-signal-teal">COMPLIANT</td>
+                      </tr>
+                      <tr>
+                        <td class="py-3 px-4 text-warm-white">Multi-Item Clustered Pick</td>
+                        <td class="py-3 px-4 text-muted-steel">&gt; 96.00%</td>
+                        <td class="py-3 px-4 text-warm-white">97.10%</td>
+                        <td class="py-3 px-4 text-right text-signal-teal">COMPLIANT</td>
+                      </tr>
+                      <tr>
+                        <td class="py-3 px-4 text-warm-white">Lighting Degradation (&lt;50 Lux)</td>
+                        <td class="py-3 px-4 text-muted-steel">Safe Abstain</td>
+                        <td class="py-3 px-4 text-muted-steel">Abstained (100%)</td>
+                        <td class="py-3 px-4 text-right text-muted-steel">SECURE</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Failure-Case Inspector -->
+                <div class="lg:col-span-5 bg-graphite border border-border-subtle p-5 space-y-4 font-mono text-xs">
+                  <div class="text-warm-white font-medium border-b border-border-subtle pb-2">
+                    FAILURE-CASE INSPECTOR // RUN #10K
+                  </div>
+                  <div class="p-3 bg-obsidian border border-border-subtle space-y-2">
+                    <div class="flex justify-between">
+                      <span class="text-muted-steel">Case ID:</span>
+                      <span class="text-warm-white">FAIL_0841</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-muted-steel">Trigger:</span>
+                      <span class="text-verification-amber">Rapid Double Pick (40ms)</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-muted-steel">System Output:</span>
+                      <span class="text-muted-steel">ABSTAIN (Confidence &lt; 0.90)</span>
+                    </div>
+                    <p class="text-[11px] text-muted-steel pt-1 leading-relaxed">
+                      Two yogurt cups grabbed simultaneously by child hand with partial palm coverage. System safely declined automated match and flagged as abstain.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function switchTab(tabName) {
+      // Hide all views
+      document.getElementById('view-overview').classList.add('hidden');
+      document.getElementById('view-workbench').classList.add('hidden');
+      document.getElementById('view-evaluation').classList.add('hidden');
+
+      // Reset button styles
+      const tabs = ['overview', 'workbench', 'evaluation'];
+      tabs.forEach(t => {
+        const btn = document.getElementById('tab-btn-' + t);
+        if (btn) {
+          btn.classList.remove('bg-obsidian', 'border-l-2', 'border-signal-teal', 'text-warm-white');
+          btn.classList.add('text-muted-steel');
+        }
+      });
+
+      // Show selected view
+      const activeView = document.getElementById('view-' + tabName);
+      if (activeView) activeView.classList.remove('hidden');
+
+      const activeBtn = document.getElementById('tab-btn-' + tabName);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-obsidian', 'border-l-2', 'border-signal-teal', 'text-warm-white');
+        activeBtn.classList.remove('text-muted-steel');
+      }
+    }
+
+    function triggerDemoRun() {
+      switchTab('workbench');
+    }
+  </script>
+</body>
+</html>

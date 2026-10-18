@@ -1,0 +1,5 @@
+# Vision tier: install ON TOP OF core to re-run the real detector on video.
+# ultralytics pulls torch (CPU build used on CPU-only laptops).
+-r requirements-core.txt
+ultralytics>=8.0,<9.0
+lapx>=1.0,<2.0

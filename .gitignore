@@ -1,0 +1,119 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/pyton/
+pip-log.txt
+pip-delete-this-directory.txt
+.suffix.cfg
+.pytest_cache/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytorch_cache/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytorch_cache/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+.claude/
+*.swp
+*.swo
+*#
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data - keep sample clips and cache tracked for turnkey zero-download demo
+runs/*
+!runs/.gitkeep
+scratch/
+*.zip
+
+
+# Logs
+*.log
+
+# MySQL
+mysql/
+
+# SQLite
+*.sqlite3
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+
+# pyenv
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule
+
+# Parsl
+parsl/
+
+# Output of jupyter notebooks
+.ipynb_checkpoints
+
+# pyright
+pyrightconfig.json
+
+# Streamlit
+.streamlit/
+
+# Antigravity (frontend) - reserved, keep out of backend repo
+antigravity/
+Antigravity/

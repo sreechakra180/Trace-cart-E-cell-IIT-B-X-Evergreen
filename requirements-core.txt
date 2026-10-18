@@ -1,0 +1,13 @@
+# Core tier: engine, tests, demo-from-cache. Runs without torch/GPU.
+# Pin lower bounds so fresh-clone installs reproduce the demo.
+numpy>=1.26,<2.0
+scipy>=1.12,<2.0
+pydantic>=2.7,<3.0
+pyyaml>=6.0,<7.0
+opencv-python-headless>=4.10,<5.0
+pytest>=8.3,<9.0
+fastapi>=0.110.0,<1.0
+uvicorn>=0.28.0,<1.0
+python-multipart>=0.0.9,<1.0
+httpx>=0.27.0,<1.0
+tabulate>=0.9.0,<1.0

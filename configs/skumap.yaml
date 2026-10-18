@@ -1,0 +1,13 @@
+# SKU to COCO object detector class mapping
+sku_to_class:
+  SKU-WATER: "bottle"
+  SKU-WATER-500ML: "bottle"
+  SKU-ALMOND-1L: "bottle"
+  SKU-COFFEE-250G: "bottle"
+  SKU-SOURDOUGH-500G: "cup"
+  SKU-YOGURT-CUP: "cup"
+  SKU-APPLE: "apple"
+  SKU-AVOCADO-4PK: "apple"
+  SKU-ORANGE: "orange"
+  SKU-ORANGE-ORGANIC: "orange"
+  SKU-BANANA: "banana"
