@@ -1,0 +1,10 @@
+{"event_type": "feed_heartbeat", "session_id": "REAL01", "t_hb": 998.0, "t_ingest": 998.01, "seq": 0}
+{"event_type": "feed_heartbeat", "session_id": "REAL01", "t_hb": 999.0, "t_ingest": 999.01, "seq": 1}
+{"event_type": "feed_heartbeat", "session_id": "REAL01", "t_hb": 1000.0, "t_ingest": 1000.01, "seq": 2}
+{"event_type": "feed_heartbeat", "session_id": "REAL01", "t_hb": 1001.0, "t_ingest": 1001.01, "seq": 3}
+{"event_type": "feed_heartbeat", "session_id": "REAL01", "t_hb": 1002.0, "t_ingest": 1002.01, "seq": 4}
+{"event_type": "feed_heartbeat", "session_id": "REAL01", "t_hb": 1003.0, "t_ingest": 1003.01, "seq": 5}
+{"event_type": "feed_heartbeat", "session_id": "REAL01", "t_hb": 1004.0, "t_ingest": 1004.01, "seq": 6}
+{"event_type": "feed_heartbeat", "session_id": "REAL01", "t_hb": 1005.0, "t_ingest": 1005.01, "seq": 7}
+{"event_type": "feed_heartbeat", "session_id": "REAL01", "t_hb": 1006.0, "t_ingest": 1006.01, "seq": 8}
+{"event_type": "feed_heartbeat", "session_id": "REAL01", "t_hb": 1007.0, "t_ingest": 1007.01, "seq": 9}

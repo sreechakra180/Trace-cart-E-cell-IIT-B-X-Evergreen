@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  tracecart-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tracecart-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TRACECART_CORS_ORIGINS=http://localhost:8000,http://127.0.0.1:8000,http://localhost:3000
+    volumes:
+      - ./runs:/app/runs
+      - ./data/uploads:/app/data/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

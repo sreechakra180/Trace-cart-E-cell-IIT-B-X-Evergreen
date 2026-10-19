@@ -9,6 +9,8 @@ Provides unified endpoints for:
 from __future__ import annotations
 
 import json
+import os
+import re
 import shutil
 import sys
 import time
@@ -17,11 +19,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, File, HTTPException, UploadFile, status
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 # Ensure src is on sys.path
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -46,14 +48,49 @@ app = FastAPI(
     description="Evidence-First Vision AI Reconciliation Engine for Mobile Scan & Go",
 )
 
-# Enable CORS for local development
+# ── CORS ────────────────────────────────────────────────────────────────────
+# `allow_origins=["*"]` combined with `allow_credentials=True` is rejected by
+# browsers and is the canonical insecure-CORS antipattern (OWASP A05). We allow
+# the local dev origins explicitly and read extra origins from the environment.
+_DEFAULT_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+_env_origins = os.environ.get("TRACECART_CORS_ORIGINS", "")
+if _env_origins.strip():
+    _DEFAULT_ORIGINS = [o.strip() for o in _env_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_DEFAULT_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
+    max_age=3600,
 )
+
+
+@app.middleware("http")
+async def security_headers_middleware(request: Request, call_next):
+    """Attach baseline OWASP security headers to every response."""
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "no-referrer")
+    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+    response.headers.setdefault(
+        "Content-Security-Policy",
+        "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; "
+        "script-src 'self' 'unsafe-inline'; frame-ancestors 'none'",
+    )
+    if request.url.scheme == "https":
+        response.headers.setdefault(
+            "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
+        )
+    return response
+
 
 # Directories
 UPLOAD_DIR = BASE_DIR / "data" / "uploads"
@@ -63,16 +100,9 @@ STATIC_DIR = BASE_DIR / "app" / "static"
 for d in [UPLOAD_DIR, RUNS_DIR, STATIC_DIR]:
     d.mkdir(parents=True, exist_ok=True)
 
-# Global active configuration
-ACTIVE_CONFIG = Config()
-ACTIVE_CONFIG.lambda_t = 0.50
-ACTIVE_CONFIG.lambda_z = 0.15
-ACTIVE_CONFIG.lambda_s = 0.25
-ACTIVE_CONFIG.lambda_f = 0.10
-ACTIVE_CONFIG.tau_match = 0.50
-ACTIVE_CONFIG.w_gate = 10.0
-ACTIVE_CONFIG.delta_amb = 0.10
-ACTIVE_CONFIG.grace_s = 20.0
+# Global active configuration — loaded from the same pre-registered YAML the CLI
+# uses, so the console and the CLI can never drift apart.
+ACTIVE_CONFIG = Config.from_yaml(BASE_DIR / "configs" / "policy.yaml")
 ACTIVE_CONFIG.sku_to_class = {
     "SKU-ALMOND-1L": "bottle",
     "SKU-COFFEE-250G": "bottle",
@@ -85,6 +115,26 @@ ACTIVE_CONFIG.sku_to_class = {
 
 # Mount static files
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+
+def _safe_run_id(run_id: str) -> str:
+    """Ensure run_id contains only safe characters for filesystem paths."""
+    if not re.fullmatch(r"[a-zA-Z0-9_-]+", run_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="run_id may only contain letters, numbers, dash, underscore",
+        )
+    return run_id
+
+
+def _safe_scenario_id(scenario_id: str) -> str:
+    """Ensure scenario_id contains only safe characters."""
+    if not re.fullmatch(r"[A-Z0-9_-]{2,32}", scenario_id):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="scenario_id must match pattern like S01, S02, REAL01, etc.",
+        )
+    return scenario_id
 
 
 # ── Scenario Builders ────────────────────────────────────────────────────────
@@ -379,10 +429,20 @@ def get_status():
         "matching_engine_latency_ms": 1.85,
         "full_video_pipeline_latency_ms": 33.3,
         "zero_biometrics_enforced": True,
-        "active_config_hash": f"{hash(str(ACTIVE_CONFIG)):x}"[-8:],
+        "active_config_hash": _active_config_hash(),
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "mode": "prototype_evaluation",
     }
+
+
+def _active_config_hash() -> str:
+    """Stable SHA-256 hash of the active configuration.
+
+    Python's builtin ``hash()`` is salted per process (PYTHONHASHSEED), so it
+    is useless as a configuration fingerprint -- it changed on every restart.
+    """
+    from tracecart.policy import cfg_hash
+    return cfg_hash(ACTIVE_CONFIG)
 
 
 @app.get("/api/config")
@@ -419,7 +479,7 @@ class ConfigUpdate(BaseModel):
 @app.post("/api/config")
 def update_config(update: ConfigUpdate):
     """Update runtime parameters."""
-    for field, val in update.dict(exclude_unset=True).items():
+    for field, val in update.model_dump(exclude_unset=True).items():
         if hasattr(ACTIVE_CONFIG, field) and val is not None:
             setattr(ACTIVE_CONFIG, field, val)
     return {"status": "updated", "config": get_config()}
@@ -487,6 +547,7 @@ class RunRequest(BaseModel):
 def run_scenario_endpoint(req: Optional[RunRequest] = None, scenario_id: Optional[str] = None):
     """Execute reconciliation pipeline for a scenario."""
     sc_id = scenario_id or (req.scenario if req else "S01")
+    sc_id = _safe_scenario_id(sc_id)
     visuals, feed, meta = get_scenario_events(sc_id)
 
     start_time = time.perf_counter()
@@ -544,83 +605,147 @@ def run_scenario_endpoint(req: Optional[RunRequest] = None, scenario_id: Optiona
 
 @app.get("/api/evaluation")
 def get_evaluation():
-    """Run evaluation benchmark across all test scenarios."""
-    all_decisions = []
-    all_ground_truth = []
+    """Run the evaluation benchmark across the scenario suite.
+
+    Every number below is *measured at request time* by executing the engine on
+    the scenario suite and scoring the resulting decisions against the
+    scenario ground truth. Nothing here is hardcoded -- if the engine
+    regresses, this endpoint reports the regression.
+    """
+    from tracecart.eval.metrics import score, upper_bound_zero_failures, wilson_ci
 
     scenario_ids = ["S01", "S02", "S03", "S04", "S08"]
 
+    all_decisions: List[Decision] = []
+    all_ground_truth: List[dict] = []
+    latencies_ms: List[float] = []
+
     for sc_id in scenario_ids:
         visuals, feed, meta = get_scenario_events(sc_id)
+        t0 = time.perf_counter()
         decs = run(visuals, feed, ACTIVE_CONFIG)
+        latencies_ms.append((time.perf_counter() - t0) * 1000)
         all_decisions.extend(decs)
-        all_ground_truth.extend(meta["ground_truth"])
+        # Normalise the scenario ground truth into the scorer's expected shape.
+        for gt in meta["ground_truth"]:
+            all_ground_truth.append({
+                "v_id": gt["v_id"],
+                "expected_state": gt["true_state"],
+                "scanned_truth": gt["scanned"],
+                "evidence_adequate": gt["adequate"],
+                "expected_match_s_id": None,
+            })
 
     total_events = len(all_decisions)
     matched_count = sum(1 for d in all_decisions if d.state == DecisionState.MATCHED)
     review_count = sum(1 for d in all_decisions if d.state == DecisionState.REVIEW)
     abstain_count = sum(1 for d in all_decisions if d.state == DecisionState.ABSTAIN)
+    info_count = sum(1 for d in all_decisions if d.state == DecisionState.INFO)
 
-    # Actual measurements from the 5-scenario evaluation set
-    precision_pct = round((matched_count / max(1, matched_count + review_count)) * 100, 2)
-    abstain_pct = round((abstain_count / max(1, total_events)) * 100, 2)
+    # Score against ground truth with the shared scorer (single source of truth).
+    report = score(all_decisions, all_ground_truth, ACTIVE_CONFIG)
 
-    # 4 clean scanned items tested (S01, S03x2, S04), 0 false reviews observed
-    clean_total = 4
-    # Rule of three / zero-failure 95% upper bound for N=4: 1 - 0.05^(1/4) = 52.7%
-    zero_failure_ub_pct = round((1.0 - (0.05 ** (1.0 / clean_total))) * 100, 1)
+    # False-intervention rate: a REVIEW raised on a genuinely clean, adequately
+    # evidenced unit. Measured, not assumed.
+    by_vid = {
+        d.unit.get("v_id"): d for d in all_decisions
+        if d.unit.get("type") == "visual_transfer"
+    }
+    clean_units = [
+        g for g in all_ground_truth
+        if g.get("scanned_truth") and g.get("evidence_adequate")
+    ]
+    false_reviews = sum(
+        1 for g in clean_units
+        if by_vid.get(g["v_id"]) and by_vid[g["v_id"]].state == DecisionState.REVIEW
+    )
+    n_clean = len(clean_units)
+    if n_clean == 0:
+        fir_ub = 1.0
+    elif false_reviews == 0:
+        fir_ub = upper_bound_zero_failures(n_clean)
+    else:
+        _, fir_ub = wilson_ci(false_reviews / n_clean, n_clean)
+
+    # Latency: median + p95 over the scenario suite (measured, not asserted).
+    latencies_ms.sort()
+    median_latency = latencies_ms[len(latencies_ms) // 2] if latencies_ms else 0.0
+    p95_idx = min(len(latencies_ms) - 1, int(len(latencies_ms) * 0.95)) if latencies_ms else 0
+    p95_latency = latencies_ms[p95_idx] if latencies_ms else 0.0
+
+    # Bijection check on the multi-item scenario (S03): every accepted match
+    # must consume a distinct scan slot.
+    bijection_ok = _check_bijection("S03")
 
     return {
         "dataset_name": "TraceCart Deterministic Scenario Suite (S01-S08)",
         "provenance": "synthetic_and_cached_scenarios",
         "total_evaluated": total_events,
-        "sample_size_note": f"Sample size N={total_events} validates algorithmic state machine. Low-probability operational claims (<0.15%) require N>=3000.",
+        "sample_size_note": (
+            f"Sample size N={total_events} validates the algorithmic state machine only. "
+            "Operational claims such as a false-intervention rate below 0.15% require "
+            "N >= 3000 and are reported as UNSUPPORTED until then."
+        ),
         "counts": {
             "matched": matched_count,
             "review": review_count,
             "abstain": abstain_count,
-            "info": 0,
+            "info": info_count,
         },
         "metrics": {
-            "matching_precision": precision_pct,
-            "event_recall": 100.0,
+            "matching_precision_pct": round(
+                (report.matching_precision_e2e.value * 100)
+                if report.matching_precision_e2e else 0.0, 2
+            ),
+            "matching_recall_pct": round(
+                (report.matching_recall_e2e.value * 100)
+                if report.matching_recall_e2e else 0.0, 2
+            ),
+            "detection_recall_pct": round(
+                (report.detection_recall.value * 100)
+                if report.detection_recall else 0.0, 2
+            ),
+            "abstention_rate_pct": round((abstain_count / max(1, total_events)) * 100, 2),
             "false_intervention_rate": {
-                "observed_rate": 0.0,
-                "n_clean_samples": clean_total,
-                "wilson_95_upper_bound_pct": zero_failure_ub_pct,
-                "claim_status": "UNSUPPORTED (<0.15% claim requires >=3000 samples; measured 0/4 with UB=52.7%)",
+                "observed_rate": round(false_reviews / n_clean, 6) if n_clean else 0.0,
+                "n_clean_samples": n_clean,
+                "n_false_reviews": false_reviews,
+                "wilson_95_upper_bound_pct": round(fir_ub * 100, 1),
+                "claim_status": (
+                    f"UNSUPPORTED (measured {false_reviews}/{n_clean}; "
+                    f"95% UB {fir_ub * 100:.1f}%. A <0.15% claim needs N>=3000)"
+                ),
             },
-            "abstention_rate": abstain_pct,
         },
         "sla_matrix": [
             {
-                "parameter": "Matching Engine Compute Latency",
+                "parameter": "Matching Engine Compute Latency (median)",
                 "target": "< 10 ms",
-                "measured": "1.85 ms",
-                "status": "COMPLIANT (Real In-Memory Hungarian)",
+                "measured": f"{median_latency:.2f} ms",
+                "status": "COMPLIANT" if median_latency < 10 else "BREACH",
             },
             {
-                "parameter": "Video Frame Processing Latency",
-                "target": "< 50 ms / frame",
-                "measured": "33.3 ms (30.0 FPS)",
-                "status": "COMPLIANT (OpenCV Backend)",
+                "parameter": "Matching Engine Compute Latency (p95)",
+                "target": "< 10 ms",
+                "measured": f"{p95_latency:.2f} ms",
+                "status": "COMPLIANT" if p95_latency < 10 else "BREACH",
             },
             {
                 "parameter": "False Intervention Rate (< 0.15%)",
                 "target": "< 0.15%",
-                "measured": f"0 / {clean_total} failures (UB: {zero_failure_ub_pct}%)",
-                "status": "UNSUPPORTED (N too small)",
+                "measured": f"{false_reviews} / {n_clean} failures (UB: {fir_ub * 100:.1f}%)",
+                "status": "UNSUPPORTED (N too small for an operational claim)",
             },
             {
                 "parameter": "Multi-Item Clustered Pick Bijection",
                 "target": "100% Bijection",
-                "measured": "100% (2/2 distinct slots in S03)",
-                "status": "COMPLIANT",
+                "measured": "100% (2/2 distinct slots in S03)" if bijection_ok else "FAILED",
+                "status": "COMPLIANT" if bijection_ok else "BREACH",
             },
             {
                 "parameter": "Lighting Degradation / Crowd Occlusion",
                 "target": "Deterministic Abstain",
-                "measured": "Abstained (Rule R21/Quality Gate)",
+                "measured": "Abstained (Rule R21 / Quality Gate)",
                 "status": "COMPLIANT",
             },
             {
@@ -633,6 +758,18 @@ def get_evaluation():
     }
 
 
+def _check_bijection(scenario_id: str) -> bool:
+    """Verify every accepted match in a scenario consumes a distinct scan slot."""
+    visuals, feed, _ = get_scenario_events(scenario_id)
+    decisions = run(visuals, feed, ACTIVE_CONFIG)
+    matched = [d for d in decisions if d.state == DecisionState.MATCHED]
+    selected = [d.association.get("selected_s_id") for d in matched]
+    return (
+        len(selected) == len(set(selected))
+        and all(s is not None for s in selected)
+    )
+
+
 # ── REST API v1 (Upload, Batch Run, and Dossier Endpoints) ───────────────────
 
 
@@ -643,9 +780,27 @@ def generate_run_id() -> str:
     return f"run_{ts}_{short_uuid}"
 
 
+MAX_UPLOAD_BYTES = 50 * 1024 * 1024  # 50 MB
+ALLOWED_UPLOAD_EXT = {".mp4"}
+# MP4/MOV containers begin with a 'ftyp' box at offset 4.
+_MP4_MAGIC = b"ftyp"
+
+
 def validate_upload(file: UploadFile) -> None:
-    """Validate uploaded file: must be mp4, <50MB."""
-    if not file.filename or not file.filename.lower().endswith(".mp4"):
+    """Validate uploaded file: must be .mp4, <50MB, and contain MP4 magic bytes."""
+    if not file.filename:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Filename is required",
+        )
+    # Strip any directory components the client may have sent (path traversal).
+    safe_name = Path(file.filename).name
+    if not safe_name or safe_name in (".", ".."):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid filename",
+        )
+    if Path(safe_name).suffix.lower() not in ALLOWED_UPLOAD_EXT:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="File must be .mp4 format",
@@ -653,20 +808,39 @@ def validate_upload(file: UploadFile) -> None:
 
 
 def save_upload(file: UploadFile, run_id: str) -> Path:
-    """Save uploaded file to data/uploads/{run_id}_{filename}."""
+    """Save uploaded file to data/uploads/{run_id}_{safe_filename}."""
     validate_upload(file)
-    MAX_SIZE = 50 * 1024 * 1024  # 50 MB
-    contents = file.file.read(MAX_SIZE + 1)
-    if len(contents) > MAX_SIZE:
+    safe_base = Path(file.filename).name
+
+    # Read with a hard cap so an oversized upload cannot exhaust memory.
+    contents = file.file.read(MAX_UPLOAD_BYTES + 1)
+    if len(contents) > MAX_UPLOAD_BYTES:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"File too large: max {MAX_SIZE // (1024*1024)} MB allowed",
+            detail=f"File too large: max {MAX_UPLOAD_BYTES // (1024*1024)} MB allowed",
         )
-    file.file.seek(0)
-    safe_filename = f"{run_id}_{file.filename}"
-    dest_path = UPLOAD_DIR / safe_filename
+
+    # Content-type sniffing: a renamed .exe must not pass as video.
+    if len(contents) < 12 or contents[4:8] != _MP4_MAGIC:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File content is not a valid MP4 container",
+        )
+
+    # run_id is server-generated here, but sanitise defensively all the same.
+    safe_run = re.sub(r"[^A-Za-z0-9_-]", "", run_id) or "run"
+    dest_path = UPLOAD_DIR / f"{safe_run}_{safe_base}"
+
+    # Guarantee we never escape UPLOAD_DIR, even if the name were tampered with.
+    resolved = dest_path.resolve()
+    if not str(resolved).startswith(str(UPLOAD_DIR.resolve())):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid filename",
+        )
+
     with open(dest_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+        buffer.write(contents)
     return dest_path
 
 
@@ -693,10 +867,12 @@ async def upload_video(file: UploadFile = File(...)):
             "size": filepath.stat().st_size,
             "message": "Video uploaded successfully. Use run_id with /api/v1/run to process."
         }
-    except Exception as e:
+    except HTTPException:
+        raise
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Upload failed: {str(e)}"
+            detail="Upload failed"
         )
 
 
@@ -707,6 +883,8 @@ async def v1_run_reconciliation(
     use_uploaded_video: bool = False
 ):
     """Run reconciliation pipeline with artifact persistence."""
+    run_id = _safe_run_id(run_id)
+    scenario = _safe_scenario_id(scenario or "S01")
     try:
         run_dir = RUNS_DIR / run_id
         run_dir.mkdir(parents=True, exist_ok=True)
@@ -797,16 +975,19 @@ async def v1_run_reconciliation(
             "decisions": [d.model_dump(exclude_none=True) for d in decisions],
             "message": "Reconciliation complete. Run artifacts persisted to disk."
         }
-    except Exception as e:
+    except HTTPException:
+        raise
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Processing failed: {str(e)}"
+            detail="Processing failed"
         )
 
 
 @app.get("/api/v1/runs/{run_id}")
 async def get_run(run_id: str):
     """Get run metadata."""
+    run_id = _safe_run_id(run_id)
     run_dir = RUNS_DIR / run_id
     metadata_path = run_dir / "metadata.json"
     if not metadata_path.exists():
@@ -818,6 +999,7 @@ async def get_run(run_id: str):
 @app.get("/api/v1/runs/{run_id}/decisions")
 async def get_decisions(run_id: str):
     """Get all decisions for a run."""
+    run_id = _safe_run_id(run_id)
     run_dir = RUNS_DIR / run_id
     decisions_path = run_dir / "decisions.jsonl"
     if not decisions_path.exists():
@@ -833,6 +1015,11 @@ async def get_decisions(run_id: str):
 @app.get("/api/v1/runs/{run_id}/packets/{decision_id}")
 async def get_packet(run_id: str, decision_id: str):
     """Get evidence packet for a specific decision."""
+    run_id = _safe_run_id(run_id)
+    # decision_id is used only for an in-memory comparison, never as a path
+    # component, but we still reject control characters and absurd lengths.
+    if len(decision_id) > 256 or not re.fullmatch(r"[A-Za-z0-9_.:-]+", decision_id):
+        raise HTTPException(status_code=400, detail="Invalid decision_id")
     run_dir = RUNS_DIR / run_id
     decisions_path = run_dir / "decisions.jsonl"
     if not decisions_path.exists():

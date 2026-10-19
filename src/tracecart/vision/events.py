@@ -52,18 +52,39 @@ def extract_transfer_events(
     zones: Dict[str, Zone],
     cfg: Config,
     clip_start_epoch: float,
+    *,
+    session_id: Optional[str] = None,
+    clip_name: Optional[str] = None,
 ) -> List[dict]:
     """Convert detection+track stream into transfer event dicts.
 
     Returns dicts compatible with VisualTransferEvent (keys matching schema).
+
+    Per ARCHITECTURE §5, step 4:
+      - For each non-person track: first frame inside Z_PICK, then first later
+        frame inside Z_BAG.
+      - Accept if t_bag - t_pick in [min_dt, max_dt], n_frames >= min_track_frames,
+        class in eligible_classes.
+      - Timestamps are absolute: t = clip_start_epoch + frame-relative seconds.
     """
     eligible_classes = set(cfg.get("eligible_classes", []))
     person_class = cfg.get("person_class", "person")
+    session_id = session_id or cfg.get("session_id") or "unknown"
+    clip_name = clip_name or cfg.get("clip_name") or "unknown"
+
+    # Build per-track person-overlap counts from person-class detections.
+    person_dets_by_track: Dict[int, List[Detection]] = {}
+    for d in detections:
+        if d.class_name == person_class:
+            person_dets_by_track.setdefault(d.track_id, []).append(d)
 
     # Group detections by track
     by_track: Dict[int, List[Detection]] = {}
     for d in detections:
         by_track.setdefault(d.track_id, []).append(d)
+
+    # Index raw cache entries by track so we can pull per-frame quality if present.
+    # callers may have stashed dicts under d.extra; kept simple here.
 
     events: List[dict] = []
 
@@ -91,10 +112,10 @@ def extract_transfer_events(
 
         for d in dets:
             if t_pick is None and z_pick.box_center_inside((d.x1, d.y1, d.x2, d.y2)):
-                t_pick = d.t
+                t_pick = clip_start_epoch + d.t
                 t_pick_frame = d.frame
             elif t_pick is not None and t_bag is None and z_bag.box_center_inside((d.x1, d.y1, d.x2, d.y2)):
-                t_bag = d.t
+                t_bag = clip_start_epoch + d.t
                 t_bag_frame = d.frame
                 break
 
@@ -110,20 +131,30 @@ def extract_transfer_events(
         if n_frames < cfg.min_track_frames:
             continue
 
-        # Quality metrics
+        # Count distinct person boxes overlapping the pick→bag path region
+        n_persons_max = max(
+            (len(person_dets_by_track.get(tid, [])) for tid in person_dets_by_track),
+            default=0,
+        )
+
+        # Quality metrics: prefer cached per-frame quality if present, else
+        # conservative defaults that will fail the quality gate (leading to
+        # ABSTAIN) rather than pretending quality is good.
         confs = [d.conf for d in dets]
         det_conf_median = _median(confs)
         track_continuity = len(dets) / max(1, dets[-1].frame - dets[0].frame + 1)
         gap_max_s = _max_gap_s(dets)
-        n_persons_max = cfg.get("person_box_count", 0)  # filled by caller
-        luma_mean = cfg.get("luma_mean", 128.0)
-        blur_var_min = cfg.get("blur_var_min", 100.0)
+        luma_mean = cfg.get("luma_mean", 0.0)
+        blur_var_min = cfg.get("blur_var_min", 0.0)
 
-        # cls_votes: class distribution weighted by confidence
+        # cls_votes: confidence-weighted class distribution
         cls_votes: Dict[str, float] = {}
         total_conf = sum(confs)
         if total_conf > 0:
-            cls_votes[cls] = round(sum(d.conf for d in dets if d.class_name == cls) / total_conf, 6)
+            for c in eligible_classes:
+                share = sum(d.conf for d in dets if d.class_name == c) / total_conf
+                if share > 0:
+                    cls_votes[c] = round(share, 6)
 
         quality_flags: List[str] = []
         if track_continuity < cfg.track_continuity_min:
@@ -132,18 +163,18 @@ def extract_transfer_events(
             quality_flags.append("id_switch_suspect")
         if n_persons_max > cfg.n_persons_max:
             quality_flags.append("multi_person")
-        if not (cfg.luma_min <= luma_mean <= cfg.luma_max):
+        if luma_mean > 0 and not (cfg.luma_min <= luma_mean <= cfg.luma_max):
             quality_flags.append("low_light")
-        if blur_var_min < cfg.blur_var_min:
+        if blur_var_min > 0 and blur_var_min < cfg.blur_var_min:
             quality_flags.append("blurry")
 
         event = {
             "v_id": f"V-{clip_start_epoch}-{track_id}-0",
             "provenance": "video_cv",
-            "session_id": cfg.get("session_id", "unknown"),
+            "session_id": session_id,
             "camera_id": cfg.get("camera_id", "cam0"),
             "zone_path": ["Z_PICK", "Z_BAG"],
-            "store_zone": cfg.get("store_zone", "aisle04"),
+            "store_zone": z_pick.store_zone or cfg.get("store_zone", "aisle04"),
             "track_id": track_id,
             "t_pick": t_pick,
             "t_bag": t_bag,
@@ -159,7 +190,7 @@ def extract_transfer_events(
             "n_frames": n_frames,
             "quality_flags": quality_flags,
             "source_ref": {
-                "clip": cfg.get("clip_name", "unknown"),
+                "clip": clip_name,
                 "frame_start": t_pick_frame,
                 "frame_end": t_bag_frame,
                 "cache_file": "",

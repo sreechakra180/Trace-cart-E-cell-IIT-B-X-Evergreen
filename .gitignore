@@ -77,6 +77,9 @@ Thumbs.db
 # Data - keep sample clips and cache tracked for turnkey zero-download demo
 runs/*
 !runs/.gitkeep
+data/uploads/*
+!data/uploads/.gitkeep
+*.egg-info/
 scratch/
 *.zip
 

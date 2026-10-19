@@ -1,0 +1,15 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.coverage
+htmlcov/
+.git
+.github
+runs/
+data/uploads/
+*.mp4
+!data/clips/S01.mp4
+stitch_tracecart_vision_ai_console.zip
+scratch/

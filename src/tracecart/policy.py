@@ -216,11 +216,13 @@ def evaluate(
 
         # ── R10: accepted match, not ambiguous, no class conflict → MATCHED ──
         if accepted_match and (v.v_id, link.s_id) not in ambiguous_pairs:
+            # The quality gate was already evaluated; R10 only fires when quality
+            # passes (R12/R13 enforce it). Report EvidenceQuality_OK, not ts_invalid.
             decision = _make_decision(
                 v=v,
                 state=DecisionState.MATCHED,
                 rule_id="R10",
-                reason_codes=[ReasonCode.EVIDENCE_QUALITY_OK if q_pass else ReasonCode.TS_INVALID],
+                reason_codes=[ReasonCode.EVIDENCE_QUALITY_OK],
                 candidates=[link] if link else [],
                 best_cost=best_cost,
                 margin=margin,

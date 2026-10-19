@@ -65,7 +65,9 @@ def build_arg_parser() -> argparse.ArgumentParser:
 
 def main(argv: Optional[List[str]] = None) -> int:
     args = build_arg_parser().parse_args(argv)
-    cfg = Config()
+
+    # Load config from YAML if present, falling back to defaults
+    cfg = Config.from_yaml(Path("configs/policy.yaml"))
 
     # Determine data files
     data_dir = Path("data")
@@ -107,7 +109,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     # Write decisions.jsonl, packets, and config snapshot
     write_decisions(decisions, args.out)
-    write_packets(decisions, args.out, cfg_hash(cfg), "HEAD")
+    write_packets(decisions, args.out, cfg_hash(cfg), _git_commit())
     write_config_snapshot({"config": cfg.__dict__}, args.out)
 
     # Optional: print table
@@ -137,7 +139,6 @@ def main(argv: Optional[List[str]] = None) -> int:
     # Optional: run evaluation
     if args.eval:
         print("Running evaluation against ground truth ...")
-        # In real implementation, this loads from annotations/
         gt = _load_ground_truth(args.scenario)  # placeholder
         metrics: MetricsReport = score(decisions, gt, cfg)
         write_metrics(metrics.to_dict(), args.out / "metrics.json")
@@ -145,22 +146,43 @@ def main(argv: Optional[List[str]] = None) -> int:
 
         if args.baseline:
             from .baseline import run_baseline
-            from .ingest import ingest_visual_events, ingest_scan_events
+            from .ingest import ingest_scan_events
+            from .pipeline import align_clip_start_epoch, load_visuals_from_cache
             print("Running baseline ...")
-            visuals, _ = ingest_visual_events(cache_path, cfg)
             feed_events, _ = ingest_scan_events(feed_file, cfg)
+            # Same clock alignment the main pipeline used, so both engines
+            # see identical inputs (ARCHITECTURE §10).
+            clip_start_epoch = align_clip_start_epoch(feed_events)
+            visuals = load_visuals_from_cache(cache_path, cfg, clip_start_epoch)
             baseline_decisions = run_baseline(visuals, feed_events, cfg)
             comparison = score_vs_baseline(decisions, baseline_decisions, gt, cfg)
-            with open(args.out / "comparison.json", "w") as f:
+            with open(args.out / "comparison.json", "w", encoding="utf-8") as f:
                 json.dump(comparison, f, indent=2)
             print(f"Comparison written to {args.out / 'comparison.json'}")
 
     return 0
 
 
+def _git_commit() -> str:
+    """Return short git commit hash, or 'unversioned' if unavailable."""
+    import subprocess
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"],
+            cwd=str(Path(__file__).resolve().parent.parent.parent),
+            stderr=subprocess.DEVNULL,
+        ).decode().strip() or "unversioned"
+    except Exception:
+        return "unversioned"
+
+
+
+
 def _load_ground_truth(scenario_id: str) -> List[dict]:
     """Load ground truth from annotations/<scenario>.csv.
-    Placeholder: returns hardcoded truth for demo."""
+
+    Placeholder: returns minimal truth for demo until annotations/ is populated.
+    """
     # In reality, this would read data/manifests/annotations/<scenario_id>.csv
     # and produce the dicts expected by eval.metrics.score
     return [
@@ -169,7 +191,7 @@ def _load_ground_truth(scenario_id: str) -> List[dict]:
             "expected_state": "MATCHED",
             "scanned_truth": True,
             "evidence_adequate": True,
-            "expected_match_s_id": f"S-{scenario_id}-T01-0",
+            "expected_match_s_id": None,
         },
         {
             "v_id": f"V-{scenario_id}-T02-0",

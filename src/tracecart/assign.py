@@ -100,23 +100,29 @@ def assign(
                 link.selected = True
 
     # Ambiguity margins
-    # Group links by v_id and by s_id
+    # Group links by v_id and by (s_id, slot)
     by_v: Dict[str, List[CandidateLink]] = {}
-    by_s: Dict[str, List[CandidateLink]] = {}
+    by_slot: Dict[Tuple[str, int], List[CandidateLink]] = {}
     for link in candidate_links:
         if not link.gate_pass:
             continue
         by_v.setdefault(link.v_id, []).append(link)
-        by_s.setdefault(link.s_id, []).append(link)
+        by_slot.setdefault((link.s_id, link.slot), []).append(link)
 
     for link in candidate_links:
         if not link.gate_pass or not link.selected:
             continue
-        # margin_i = min over other candidates j' of C(i,j') - C(i,j)
-        rival_costs_v = [l.cost for l in by_v.get(link.v_id, []) if l.s_id != link.s_id]
+        # margin_i = min over other candidate slots j' of C(i,j') - C(i,j)
+        rival_costs_v = [
+            l.cost for l in by_v.get(link.v_id, [])
+            if (l.s_id, l.slot) != (link.s_id, link.slot)
+        ]
         margin_i = min((c - link.cost for c in rival_costs_v), default=1.0)
-        # margin_j = min over rival visual events of C(i',j) - C(i,j)
-        rival_costs_s = [l.cost for l in by_s.get(link.s_id, []) if l.v_id != link.v_id]
+        # margin_j = min over rival visual events for this specific slot of C(i',j) - C(i,j)
+        rival_costs_s = [
+            l.cost for l in by_slot.get((link.s_id, link.slot), [])
+            if l.v_id != link.v_id
+        ]
         margin_j = min((c - link.cost for c in rival_costs_s), default=1.0)
         link.margin = min(margin_i, margin_j)
 

@@ -22,7 +22,9 @@ from .schema import (
     VisualTransferEvent,
 )
 from .config import Config
-from .ingest import ingest_scan_events, ingest_visual_events
+from .ingest import ingest_scan_events
+from .vision.events import extract_transfer_events
+from .vision.zones import load_zones
 from .policy import evaluate
 
 
@@ -76,6 +78,94 @@ def run(
 # ── Disk-based scenario entry point ───────────────────────────────────────
 
 
+def load_cache_detections(cache_file: str | Path) -> List[dict]:
+    """Read raw detection entries from a cache JSONL file.
+
+    Malformed rows are skipped rather than fatal — a detector cache is an
+    external artifact and a single corrupt line must not abort the run.
+    """
+    entries: List[dict] = []
+    required = ("frame", "t", "x1", "y1", "x2", "y2", "class_name", "conf", "track_id")
+    with open(cache_file, encoding="utf-8") as f:
+        for raw in f:
+            raw = raw.strip()
+            if not raw:
+                continue
+            try:
+                obj = json.loads(raw)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(obj, dict) and all(k in obj for k in required):
+                entries.append(obj)
+    return entries
+
+
+def load_visuals_from_cache(
+    cache_file: str | Path,
+    cfg: Config,
+    clip_start_epoch: float = 0.0,
+    session_id: Optional[str] = None,
+) -> List[VisualTransferEvent]:
+    """Convert a detector cache into typed VisualTransferEvents.
+
+    The cache stores raw per-frame detections (ARCHITECTURE §5 step 3). The
+    V3 transfer-event extraction (§5 step 4) is applied here to produce the
+    zone-conditioned events the engine consumes.
+    """
+    from .vision.events import Detection, extract_transfer_events
+
+    entries = load_cache_detections(cache_file)
+    detections = [
+        Detection(
+            frame=int(e["frame"]),
+            t=float(e["t"]),
+            x1=float(e["x1"]),
+            y1=float(e["y1"]),
+            x2=float(e["x2"]),
+            y2=float(e["y2"]),
+            class_name=e["class_name"],
+            conf=float(e["conf"]),
+            track_id=int(e["track_id"]),
+        )
+        for e in entries
+    ]
+
+    zones = load_zones(cfg.zones_yaml)
+    event_dicts = extract_transfer_events(
+        detections=detections,
+        zones=zones,
+        cfg=cfg,
+        clip_start_epoch=clip_start_epoch,
+        session_id=session_id,
+        clip_name=Path(cache_file).stem.replace("obs_", ""),
+    )
+
+    visuals: List[VisualTransferEvent] = []
+    for event_dict in event_dicts:
+        try:
+            visuals.append(VisualTransferEvent(**event_dict))
+        except Exception:
+            # A malformed transfer event is skipped, not fatal.
+            continue
+    return visuals
+
+
+def align_clip_start_epoch(feed_events: List[TransactionScanEvent]) -> float:
+    """Infer the clip's start epoch so visual and scan clocks share a frame.
+
+    Cached observations store time relative to clip start (frame_idx / fps).
+    The feed stores absolute UTC epoch seconds. Aligning the two requires the
+    clip's absolute start, which we recover from the earliest scan: the visual
+    transfer lands roughly a handling-buffer before the customer scans.
+
+    Returns 0.0 when no valid scan timestamp exists (caller decides fallback).
+    """
+    scan_times = [s.t_scan for s in feed_events if s.t_scan is not None]
+    if not scan_times:
+        return 0.0
+    return min(scan_times) - 1.5
+
+
 def run_scenario(
     scenario_id: str,
     cache_file: str | Path,
@@ -86,9 +176,14 @@ def run_scenario(
 
     This is what `make demo` calls. Reads from committed cache (no torch needed).
     """
-    visuals, _ = ingest_visual_events(cache_file, cfg)
-    feed, _ = ingest_scan_events(feed_file, cfg)
-    return run(visuals, feed, cfg)
+    feed_events, _ = ingest_scan_events(feed_file, cfg)
+    clip_start_epoch = align_clip_start_epoch(feed_events)
+
+    # The scenario ID doubles as the session key (each scenario = one store visit).
+    # Thread it into visual extraction so gate_pair can match visual ↔ scan.
+    session_id = scenario_id
+    visuals = load_visuals_from_cache(cache_file, cfg, clip_start_epoch, session_id=session_id)
+    return run(visuals, feed_events, cfg)
 
 
 # ── Orphan scan handling (R40 → INFO) ──────────────────────────────────────

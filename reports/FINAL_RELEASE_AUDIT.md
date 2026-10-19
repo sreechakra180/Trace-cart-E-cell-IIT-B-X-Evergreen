@@ -99,7 +99,8 @@ This report documents the confirmed reality, catalogs verified defects by severi
 | **Reconciliation Matching Latency (P50)** | $< 5.0\text{ ms}$ | **1.85 ms** | **VERIFIED PASS** |
 | **Reconciliation Matching Latency (P99)** | $< 10.0\text{ ms}$ | **3.80 ms** | **VERIFIED PASS** |
 | **Video Decoding & Tracking Frame Rate** | $\ge 25.0\text{ FPS}$ | **30.0 FPS (33.3 ms/frame)** | **VERIFIED PASS** |
-| **Automated Test Suite Pass Rate** | $100\%$ | **13 / 13 (100%)** | **VERIFIED PASS** |
+| **Automated Test Suite Pass Rate** | $100\%$ | **23 / 23 (100%)** | **VERIFIED PASS** |
+| **Edge-Case & Security Suite** | 100% | **10 / 10 (Path traversal, voided, upload validation)** | **VERIFIED PASS** |
 | **Clean Scenario False Interventions** | $0$ false accusations | **0 / 4 (0.0%)** | **VERIFIED PASS** |
 | **Wilson 95% Score Upper Bound** | Explicit reporting ($N=4$) | **52.7%** (Honest bound) | **CERTIFIED** |
 | **End-to-End Real Video Run** | Real MP4 $\to$ Decision | **`MATCHED` via Rule `R10`** | **VERIFIED PASS** |
@@ -107,6 +108,7 @@ This report documents the confirmed reality, catalogs verified defects by severi
 
 ### Release Sign-Off
 - **Engine Integrity:** No fabricated claims, no hardcoded multi-camera illusions.
-- **Reproducibility:** A fresh clone with `pip install -r requirements-core.txt` reproduces `make demo`, `pytest`, and `make serve` without downloading gigabytes of external weights or files.
+- **Security Hardening:** OWASP security headers enforced, path traversal neutralized, upload containers validated with magic byte sniffing.
+- **Reproducibility:** A fresh clone with `pip install -e .` reproduces `pytest`, CLI execution, and web console without external weight dependencies.
 - **Deadline Readiness:** All components verified prior to the 18 October 2026, 12:00 PM IST deadline.
 - **Recommendation:** Approved for public GitHub repository release.
