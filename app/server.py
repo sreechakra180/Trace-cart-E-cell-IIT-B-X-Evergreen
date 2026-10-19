@@ -483,9 +483,11 @@ class RunRequest(BaseModel):
 
 
 @app.post("/api/run")
-def run_scenario_endpoint(req: RunRequest):
+@app.post("/api/run/{scenario_id}")
+def run_scenario_endpoint(req: Optional[RunRequest] = None, scenario_id: Optional[str] = None):
     """Execute reconciliation pipeline for a scenario."""
-    visuals, feed, meta = get_scenario_events(req.scenario)
+    sc_id = scenario_id or (req.scenario if req else "S01")
+    visuals, feed, meta = get_scenario_events(sc_id)
 
     start_time = time.perf_counter()
     decisions: List[Decision] = run(visuals, feed, ACTIVE_CONFIG)
@@ -531,7 +533,7 @@ def run_scenario_endpoint(req: RunRequest):
         })
 
     return {
-        "scenario": req.scenario,
+        "scenario": sc_id,
         "metadata": meta,
         "processing_latency_ms": round(elapsed_ms, 2),
         "visual_count": len(visuals),
